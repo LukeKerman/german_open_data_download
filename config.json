@@ -1,0 +1,620 @@
+{
+    "DOP": {
+        "Default": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "http://example.com/Default/download",
+                "meta_data_link": "http://example.com/Default/meta",
+                "s3_path": "s3://default/dop/"
+            }
+        },
+        "BB": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://data.geobasis-bb.de/geobasis/daten/dop/rgbi_tif/dop_{}.zip",
+                "meta_data_link": "https://data.geobasis-bb.de/geobasis/information/aktualitaeten/bb_dop_aktualitaet.csv",
+                "s3_path": "s3://bb/dop/"
+            }
+        },
+        "BE": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://data.geobasis-bb.de/geobasis/daten/dop/rgbi_tif/dop_{}.zip",
+                "meta_data_link": "https://data.geobasis-bb.de/geobasis/information/aktualitaeten/bb_dop_aktualitaet.csv",
+                "s3_path": "s3://be/dop/"
+            }
+        },
+        "BW": {
+            "tile_info": {
+                "tile_size": 2000,
+                "x": 1000,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://opengeodata.lgl-bw.de/data/dop20/dop20rgb_{}_2_bw.zip",
+                "meta_data_link": "",
+                "s3_path": "s3://bw/dop/"
+            }
+        },
+        "BY": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://download1.bayernwolke.de/a/dop40/data/32611_5502.tif",
+                "meta_data_link": "",
+                "s3_path": "s3://by/dop/"
+            }
+        },
+        "HB": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://hb/dop/"
+            }
+        },
+        "HE": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://he/dop/"
+            }
+        },
+        "HH": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://he/dop/"
+            }
+        },
+        "NI": {
+            "tile_info": {
+                "tile_size": 2000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://dop.stac.lgln.niedersachsen.de/search",
+                "meta_data_link": "",
+                "s3_path": "s3://ni/dop/"
+            }
+        },
+        "NW": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://www.opengeodata.nrw.de/produkte/geobasis/lusat/akt/dop/dop_jp2_f10/dop10rgbi_32_280_5652_1_nw_2021.jp2",
+                "meta_data_link": "https://www.opengeodata.nrw.de/produkte/geobasis/lusat/akt/dop/dop_jp2_f10/dop_meta.zip",
+                "s3_path": "s3://nw/dop/"
+            }
+        },
+        "RP": {
+            "tile_info": {
+                "tile_size": 2000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://geobasis-rlp.de/data/dop20rgbi/current/jp2/dop20rgbi_32_292_5548_2_rp.jp2",
+                "meta_data_link": "https://geobasis-rlp.de/data/dop20rgbi/current/metadata/DOP20UTM_2925548.xml",
+                "s3_path": "s3://rp/dop/"
+            }
+        },
+        "SH": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://sh/dop/"
+            }
+        },
+        "ST": {
+            "tile_info": {
+                "tile_size": 2000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://www.lvermgeo.sachsen-anhalt.de/de/gdp-dop20-auswahl.html",
+                "meta_data_link": "https://www.geodatenportal.sachsen-anhalt.de/arcgis/rest/services/Geobasisdaten/atkis_geobasis_bestand/MapServer/5/query?where=NAME%3D%27326745760%27&outFields=BFDATUM&returnGeometry=false&f=json",
+                "s3_path": "s3://st/dop/"
+            }
+        },
+        "TH": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://geoportal.geoportal-th.de/gaialight-th/_apps/dladownload/download.php?type=op&id={}",
+                "meta_data_link": "https://geoportal.geoportal-th.de/gaialight-th/_apps/dladownload/_ajax/details.php?&type=op&id={}",
+                "s3_path": "s3://th/dop/"
+            }
+        },
+        "SL": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://sl/dop/"
+            }
+        },
+        "MV": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://mv/dop/"
+            }
+        },
+        "SN": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://sn/dop/"
+            }
+        }
+    },
+    "iDSM": {
+        "Default": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "http://example.com/Default/download",
+                "meta_data_link": "http://example.com/Default/meta",
+                "s3_path": "s3://default/idsm/"
+            }
+        },
+        "BB": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://data.geobasis-bb.de/geobasis/daten/bdom/tif/bdom_{}.zip",
+                "meta_data_link": "https://data.geobasis-bb.de/geobasis/information/aktualitaeten/bb_bdom_aktualitaet.csv",
+                "s3_path": "s3://bb/idsm/"
+            }
+        },
+        "BE": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://data.geobasis-bb.de/geobasis/daten/bdom/tif/bdom_{}.zip",
+                "meta_data_link": "https://data.geobasis-bb.de/geobasis/information/aktualitaeten/bb_bdom_aktualitaet.csv",
+                "s3_path": "s3://be/idsm/"
+            }
+        },
+        "BW": {
+            "tile_info": {
+                "tile_size": 2000,
+                "x": 1000,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://bw/idsm/"
+            }
+        },
+        "BY": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://by/idsm/"
+            }
+        },
+        "HB": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://hb/idsm/"
+            }
+        },
+        "HE": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://he/idsm/"
+            }
+        },
+        "HH": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://he/iDSM/"
+            }
+        },
+        "NI": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://bdom.stac.lgln.niedersachsen.de/search",
+                "meta_data_link": "",
+                "s3_path": "s3://ni/idsm/"
+            }
+        },
+        "NW": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://www.opengeodata.nrw.de/produkte/geobasis/hm/bdom50_las/bdom50_las/bdom50_32280_5652_1_nw_2023.laz",
+                "meta_data_link": "https://www.opengeodata.nrw.de/produkte/geobasis/hm/bdom50_las/bdom50_las/bdom50_meta.zip",
+                "s3_path": "s3://nw/idsm/"
+            }
+        },
+        "RP": {
+            "tile_info": {
+                "tile_size": 2000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://geobasis-rlp.de/data/bdom20rgbi/current/las/bdom20rgbi_32_416_5597_2_rp.laz",
+                "meta_data_link": "",
+                "s3_path": "s3://rp/idsm/"
+            }
+        },
+        "SH": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://sh/idsm/"
+            }
+        },
+        "ST": {
+            "tile_info": {
+                "tile_size": 2000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://www.lvermgeo.sachsen-anhalt.de/de/gdp-bdom20.html",
+                "meta_data_link": "https://www.geodatenportal.sachsen-anhalt.de/arcgis/rest/services/Geobasisdaten/atkis_geobasis_bestand/MapServer/6/query?where=NAME%3D%27326745760%27&outFields=BFDATUM&returnGeometry=false&f=json",
+                "s3_path": "s3://st/idsm/"
+            }
+        },
+        "TH": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://th/idsm/"
+            }
+        },
+        "SL": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://sl/idsm/"
+            }
+        },
+        "MV": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://mv/idsm/"
+            }
+        },
+        "SN": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://sn/idsm/"
+            }
+        }
+    },
+    "DTM": {
+        "Default": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "http://example.com/Default/download",
+                "meta_data_link": "http://example.com/Default/meta",
+                "s3_path": "s3://default/dtm/"
+            }
+        },
+        "BB": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://data.geobasis-bb.de/geobasis/daten/dgm/tif/dgm_{}.zip",
+                "meta_data_link": "https://data.geobasis-bb.de/geobasis/information/aktualitaeten/bb_dgm_aktualitaet.csv",
+                "s3_path": "s3://bb/dtm/"
+            }
+        },
+        "BE": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://data.geobasis-bb.de/geobasis/daten/dgm/tif/dgm_{}.zip",
+                "meta_data_link": "https://data.geobasis-bb.de/geobasis/information/aktualitaeten/bb_dgm_aktualitaet.csv",
+                "s3_path": "s3://be/dtm/"
+            }
+        },
+        "BW": {
+            "tile_info": {
+                "tile_size": 2000,
+                "x": 1000,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://opengeodata.lgl-bw.de/data/dgm/dgm1_{}_2_bw.zip",
+                "meta_data_link": "",
+                "s3_path": "s3://bw/dtm/"
+            }
+        },
+        "BY": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://download1.bayernwolke.de/a/dgm/dgm1/645_5387.tif",
+                "meta_data_link": "",
+                "s3_path": "s3://by/dtm/"
+            }
+        },
+        "HB": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://hb/dtm/"
+            }
+        },
+        "HE": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://he/dtm/"
+            }
+        },
+        "HH": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://he/dtm/"
+            }
+        },
+        "NI": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://dgm.stac.lgln.niedersachsen.de/search",
+                "meta_data_link": "",
+                "s3_path": "s3://ni/dtm/"
+            }
+        },
+        "NW": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://www.opengeodata.nrw.de/produkte/geobasis/hm/dgm1_tiff/dgm1_tiff/dgm1_32_280_5652_1_nw_2022.tif",
+                "meta_data_link": "https://www.opengeodata.nrw.de/produkte/geobasis/hm/dgm1_tiff/dgm1_tiff/dgm1_meta.zip",
+                "s3_path": "s3://nw/dtm/"
+            }
+        },
+        "RP": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://geobasis-rlp.de/data/dgm1/current/tif/dgm01_32_416_5597_1_rp.tif",
+                "meta_data_link": "https://geobasis-rlp.de/data/dgm1/current/metadata/dgm01_32_416_5597.xml",
+                "s3_path": "s3://rp/dtm/"
+            }
+        },
+        "SH": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://sh/dtm/"
+            }
+        },
+        "ST": {
+            "tile_info": {
+                "tile_size": 2000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://st/dtm/"
+            }
+        },
+        "TH": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://th/dtm/"
+            }
+        },
+        "SL": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://sl/dtm/"
+            }
+        },
+        "MV": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://mv/dtm/"
+            }
+        },
+        "SN": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://sn/dtm/"
+            }
+        }
+    }
+}

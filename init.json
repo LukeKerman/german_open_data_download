@@ -1,0 +1,11 @@
+{
+    "geojson_path": "/Users/lukas/Documents/GitHub/Projects/german_open_data_download/bdl/test/DB_Netz.geojson",
+    "data_type": "DOP",
+    "selected_states": null,
+    "meta_path": "meta/tile_metadata.json",
+    "date_range": {
+        "begin": null,
+        "end": null
+    }
+
+  }
