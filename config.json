@@ -96,6 +96,18 @@
                 "s3_path": "s3://he/dop/"
             }
         },
+        "MV": {
+            "tile_info": {
+                "tile_size": 2000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://www.geodaten-mv.de/dienste/dop20_download?index=0&dataset=f94d17fa-b29b-41f7-a4b8-6e10f1aae38e&file=dop20rgbi_{}_2_mv.tif",
+                "meta_data_link": "https://laiv.geodaten-mv.de/afgvk/_apps/dladownload/_ajax/details.php?&type=dop20&id={}",
+                "s3_path": "s3://mv/dop/"
+            }
+        },
         "NI": {
             "tile_info": {
                 "tile_size": 2000,
@@ -103,7 +115,7 @@
                 "y": 0
             },
             "links": {
-                "download_link": "https://dop.stac.lgln.niedersachsen.de/search",
+                "download_link": "https://arcgis-geojson.s3.eu-de.cloud-object-storage.appdomain.cloud/dop20/lgln-opengeodata-dop20.geojson",
                 "meta_data_link": "",
                 "s3_path": "s3://ni/dop/"
             }
@@ -178,18 +190,6 @@
                 "download_link": "",
                 "meta_data_link": "",
                 "s3_path": "s3://sl/dop/"
-            }
-        },
-        "MV": {
-            "tile_info": {
-                "tile_size": 1000,
-                "x": 0,
-                "y": 0
-            },
-            "links": {
-                "download_link": "",
-                "meta_data_link": "",
-                "s3_path": "s3://mv/dop/"
             }
         },
         "SN": {
@@ -302,6 +302,18 @@
                 "s3_path": "s3://he/iDSM/"
             }
         },
+        "MV": {
+            "tile_info": {
+                "tile_size": 1000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "",
+                "meta_data_link": "",
+                "s3_path": "s3://mv/idsm/"
+            }
+        },
         "NI": {
             "tile_info": {
                 "tile_size": 1000,
@@ -309,7 +321,7 @@
                 "y": 0
             },
             "links": {
-                "download_link": "https://bdom.stac.lgln.niedersachsen.de/search",
+                "download_link": "https://arcgis-geojson.s3.eu-de.cloud-object-storage.appdomain.cloud/bdom20/lgln-opengeodata-bdom20.geojson",
                 "meta_data_link": "",
                 "s3_path": "s3://ni/idsm/"
             }
@@ -384,18 +396,6 @@
                 "download_link": "",
                 "meta_data_link": "",
                 "s3_path": "s3://sl/idsm/"
-            }
-        },
-        "MV": {
-            "tile_info": {
-                "tile_size": 1000,
-                "x": 0,
-                "y": 0
-            },
-            "links": {
-                "download_link": "",
-                "meta_data_link": "",
-                "s3_path": "s3://mv/idsm/"
             }
         },
         "SN": {
@@ -508,6 +508,18 @@
                 "s3_path": "s3://he/dtm/"
             }
         },
+        "MV": {
+            "tile_info": {
+                "tile_size": 2000,
+                "x": 0,
+                "y": 0
+            },
+            "links": {
+                "download_link": "https://www.geodaten-mv.de/dienste/dgm_download?index=4&dataset=ca268792-s2q1-4a39-b34c-9ec5bf9a4469&file=dgm1_{}_2_gtiff.tif",
+                "meta_data_link": "https://laiv.geodaten-mv.de/afgvk/_apps/dladownload/_ajax/details.php?type=dgm1&id={}",
+                "s3_path": "s3://mv/dtm/"
+            }
+        },
         "NI": {
             "tile_info": {
                 "tile_size": 1000,
@@ -515,7 +527,7 @@
                 "y": 0
             },
             "links": {
-                "download_link": "https://dgm.stac.lgln.niedersachsen.de/search",
+                "download_link": "https://arcgis-geojson.s3.eu-de.cloud-object-storage.appdomain.cloud/dgm1/lgln-opengeodata-dgm1.geojson",
                 "meta_data_link": "",
                 "s3_path": "s3://ni/dtm/"
             }
@@ -590,18 +602,6 @@
                 "download_link": "",
                 "meta_data_link": "",
                 "s3_path": "s3://sl/dtm/"
-            }
-        },
-        "MV": {
-            "tile_info": {
-                "tile_size": 1000,
-                "x": 0,
-                "y": 0
-            },
-            "links": {
-                "download_link": "",
-                "meta_data_link": "",
-                "s3_path": "s3://mv/dtm/"
             }
         },
         "SN": {
