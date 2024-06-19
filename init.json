@@ -1,11 +1,13 @@
 {
-    "geojson_path": "/Users/lukas/Documents/GitHub/Projects/german_open_data_download/bdl/test/DB_Netz.geojson",
-    "data_type": "DOP",
+    "geojson_path": "/Users/lukas/Documents/GitHub/german_open_data_download/bdl/test/test_AOI_BB.geojson",
+    "data_type": "DTM",
     "selected_states": null,
-    "meta_path": "meta/tile_metadata.json",
+    "meta_path": "meta/tile_info.json",
+    "local_landing_path": "tmp",
     "date_range": {
-        "begin": null,
+        "begin": "2011-02-21",
         "end": null
-    }
-
+    },
+    "upload_s3": false,
+    "delete": false
   }
