@@ -3,6 +3,7 @@
 import json
 import os
 import time
+import sys
 
 import numpy as np
 import matplotlib as mpl
@@ -64,7 +65,7 @@ def get_multipolygon_from_geojson(file_path):
     
     # Create a MultiPolygon from the list of polygons
     multi_polygon = MultiPolygon(polygons)
-    print(f"\rLoading GeoJSON files complete.\n{'-' * 28}")
+    print(f"\rLoading GeoJSON files complete.\n{'-' * 29}")
     
     return multi_polygon
 
@@ -129,21 +130,25 @@ def print_progress(state_name, current, total):
     else:
         print(f"\rProgress of state {state_name}:\t{progress:>4.1f}%", end="", flush=True)
 
-def create_state_tile_file(show=False):
+def create_state_tile_file(init, config, show=False):
     """
     Main function to create state tile files and plot the results.
 
     Parameters:
     - show: Boolean to indicate whether to display the plot.
     """
-    init = load_json('init.json')
-    
     geojson_path = init['geojson_path']
     data_type = init['data_type']
     meta_path = init['meta_path']
-    selected_states = init.get('selected_states', None)
+    selected_states = init['selected_states']
 
-    print(f"TILE BY STATE CREATOR for {data_type}")
+    print(f"\n### TILE BY STATE CREATOR for {data_type} ###\n")
+
+    if os.path.exists(meta_path):
+        print("Tiles information file already exists. Continuing with the current file.\n")
+        return
+    else:
+        os.makedirs(os.path.dirname(meta_path), exist_ok=True)
 
     if selected_states is None:
         selected_states = []
@@ -152,9 +157,6 @@ def create_state_tile_file(show=False):
     state_files_dir = 'bdl'
     state_geojson_path_utm32 = os.path.join(state_files_dir, 'DE_bdl_utm32.geojson')
     state_geojson_path_utm33 = os.path.join(state_files_dir, 'DE_bdl_utm33.geojson')
-
-    # Load the configuration file
-    config = load_json('config.json')
 
     # Load the polygon from geojson file
     multi_polygon = get_multipolygon_from_geojson(geojson_path)
@@ -266,7 +268,7 @@ def plot_polygons_and_tiles(multi_polygon, state_tiles, state_geo, state_geo_of_
     - state_geo_of_utm33: A GeoDataFrame containing the state boundaries in UTM33 projection.
     """
 
-    print(f"{'-' * 28}\ngenerating overview plot...", end="", flush=True)
+    print(f"{'-' * 29}\ngenerating plot...", end="", flush=True)
 
     minx, miny, maxx, maxy = multi_polygon.bounds
     x_ext = maxx - minx
@@ -302,18 +304,16 @@ def plot_polygons_and_tiles(multi_polygon, state_tiles, state_geo, state_geo_of_
 
     # Iterate through each polygon in the multipolygon
     for polygon in multi_polygon.geoms:
-        # Get the exterior coordinates of the polygon
+        # Get the exterior coordinates of the polygon and create a Polygon patch
         exterior_coords = list(polygon.exterior.coords)
-        # Create a Polygon patch for the exterior
         poly_patch = MplPolygon(exterior_coords, closed=True, edgecolor='black', facecolor='none', linewidth=lw_p)
         # Add the patch to the list
         polygon_patches.append(poly_patch)
 
         # Iterate through each interior (hole) in the polygon
         for interior in polygon.interiors:
-            # Get the interior coordinates of the polygon
+            # Get the interior coordinates of the polygon and create a Polygon patch
             interior_coords = list(interior.coords)
-            # Create a Polygon patch for the interior
             interior_poly_patch = MplPolygon(interior_coords, closed=True, edgecolor='black', facecolor='none', linewidth=lw_p)
             # Add the patch to the list
             polygon_patches.append(interior_poly_patch)
@@ -379,7 +379,7 @@ def plot_polygons_and_tiles(multi_polygon, state_tiles, state_geo, state_geo_of_
     if show:
         plt.show()
 
-    print("\rOverview plot generation complete.", flush=True)
+    print("\rPlot generation complete.", flush=True)
     time.sleep(1)
 
 def display_results(file_path):
@@ -406,11 +406,11 @@ def display_results(file_path):
             total_tiles += tile_count
 
     if state_tile_counts:
-        print(f"\n\nTile counts per state ({state_data['data_type']})")
-        print("-" * 28)
+        print(f"\n\n{10 * '-'} RESULTS {10 * '-'}\n\nTile counts per state ({state_data['data_type']})")
+        print("-" * 29)
         for state, count in state_tile_counts:
             print(f"{state}:  {count:>5} tiles")
-        print("-" * 28)
+        print("-" * 29)
         print(f"Total number of tiles: {total_tiles}\n")
     else:
         print("\nNo tiles found for any state.\n")
@@ -465,4 +465,8 @@ def calculate_dpi_and_lw(x_ext, y_ext):
 
 
 if __name__ == "__main__":
-    create_state_tile_file(show=False)
+    # Load the init and configuration files
+    config = load_json('config.json')
+    init = load_json('init.json')
+
+    create_state_tile_file(init, config, show=False)
