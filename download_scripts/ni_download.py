@@ -2,75 +2,88 @@ import os
 import json
 import requests
 
-from _downloader import download_file, upload_file, delete_files_and_dir, save_tile_metadata
+from _downloader import DownloadTools
 
-def download_tiles(state_data, config):
-    state = "NI"
-    tiles = state_data.get("tile_list")
-    data_type = state_data.get("data_type")
+def download_tiles(tiles_data, config_data):
+    state = os.path.basename(__file__)[:2].upper()
+    init, config = config_data
+    landing = init['local_landing_path']
+
+    state_data = tiles_data[state]
+    tiles = state_data["tile_list"]
+    data_type = state_data["data_type"]
+
     config_info = config[data_type][state]
+    meta_path = init['meta_path']
 
-    for tile in tiles:
-        tile_name = tile['tile_name'].replace("_","")
-        search_url = config_info['links']['download_link']
+    DT = DownloadTools()
 
-        # Define the request body
-        body = { "kachelname": tile_name}
+    total_tiles = len(tiles)
 
-        # Make the POST request
-        response = requests.post(search_url, json=body)
+    info_link = config_info['links']['download_link']
 
-        # Check the response status and print the response
+    try:
+        response = requests.get(info_link)
         if response.status_code == 200:
-            #print("Request was successful.")
             result = response.json()
-            if result["features"]:
-                match data_type:
-                    case "DOP":
-                        download_link = result["features"][0]["assets"]["dop20_rgbi"]["href"]
-                    case "iDSM":
-                        download_link = result["features"][0]["assets"]["bdom20"]["href"]
-                    case "DTM":
-                        download_link = result["features"][0]["assets"]["dgm1-tif"]["href"]
-                    case _:
-                        print(f"Error with data type {data_type} is not in the configured or set correctly")
+    except Exception as e:
+        print(f"Error: No reponse from server {e}")
 
-                tile["timestamp"] = result["features"][0]["properties"]["datetime"][:10]
+    for i, tile in enumerate(tiles, start=1):
+        if not tile["location"]:
+            tile_name = tile['tile_name'].replace("_","")
+
+            for feature in result['features']:
+                if feature['properties']['tile_id'] == tile_name:
+                    match data_type:
+                        case "DOP":
+                            download_link = feature['properties']['rgbi']
+                        case "iDSM":
+                            download_link = feature['properties']['bdom']
+                        case "DTM":
+                            download_link = feature['properties']['dgm1']
+                        case _:
+                            print(f"Error with data type {data_type} is not in the configured or set correctly")
+
+                    tile["timestamp"] = feature['properties']['Aktualitaet']
+
+            # Check if timestamp is within date range
+            if DT.within_date_range(tile["timestamp"], init["date_range"]):
+                pass
+            else:
+                print(f"Tile {tile_name} not in date range")
+                continue
+
+            filename = download_link.split('/')[-1]
+            save_path = f"{landing}/{state.lower()}/{filename}"
+            os.makedirs(f"{landing}/{state.lower()}", exist_ok=True)
+        
+            # Download the file
+            try:
+                DT.download_file(download_link, save_path, tile)
+                print(f" [{i} of {total_tiles}]")
+            except Exception as e:
+                print(f"Error while downloading to {tile_name}: {e}")
+                DT.delete_files_and_dir(save_path)
+            if init['upload_s3']:
+                # Upload the file to S3
+                try:
+                    s3_path = f"{config_info['links']['s3_path']}{data_type.lower()}_{tile['tile_name']}"
+                    DT.upload_file(save_path, s3_path)
+                    tile['location'] = s3_path
+                    if init['delete']:
+                        DT.delete_files_and_dir(os.path.dirname(save_path))
+                except Exception as e:
+                    print(f"Error while uploading to {s3_path}: {e}")
+            else:
+                tile['location'] = save_path.split('.')[0]
+            
+            # Update the tile format
+            tile['format'] = download_link.split('.')[-1]
+
+            DT.save_json(meta_path, tiles_data)
         else:
-            print("Request failed with status code:", response.status_code)
-            print(response.text)
-
-        filename = download_link.split('/')[-1]
-        save_path = os.path.join("tmp", filename)
-        os.makedirs("tmp", exist_ok=True)
-        
-        # Download the file
-        download_file(download_link, save_path, tile)
-        
-        # Upload the file to S3
-        s3_path = f"s3://your-bucket/dop_{tile['tile_name']}"
-        #upload_file(save_path, s3_path)
-        
-        # Update the tile information
-        tile['location'] = s3_path
-        tile['format'] = download_link.split('.')[-1]
-        #tile['timestamp'] = extract_creation_date(meta_data_link)
+            print(f"Tile {tile['tile_name']} is already downloaded [{i} of {total_tiles}]")
     
-    delete_files_and_dir("tmp")
-
-if __name__ == "__main__":
-    import sys
-    if len(sys.argv) != 3:
-        print("Usage: python ni_download.py <tiles_json> <config_json>")
-        sys.exit(1)
-
-    tiles_json_path = sys.argv[1]
-    config_json_path = sys.argv[2]
-
-    with open(tiles_json_path, 'r') as tiles_file:
-        tiles = json.load(tiles_file)
-
-    with open(config_json_path, 'r') as config_file:
-        config = json.load(config_file)
-
-    download_tiles(tiles, config)
+    if init['delete']:
+        DT.delete_files_and_dir(landing)
