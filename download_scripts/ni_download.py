@@ -55,8 +55,8 @@ def download_tiles(tiles_data, config_data):
                 continue
 
             filename = download_link.split('/')[-1]
-            save_path = f"{landing}/{state.lower()}/{filename}"
-            os.makedirs(f"{landing}/{state.lower()}", exist_ok=True)
+            save_path = f"{landing}/{state.lower()}/{data_type.lower()}_{tile['tile_name']}/{filename}"
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
         
             # Download the file
             try:
@@ -68,7 +68,7 @@ def download_tiles(tiles_data, config_data):
             if init['upload_s3']:
                 # Upload the file to S3
                 try:
-                    s3_path = f"{config_info['links']['s3_path']}{data_type.lower()}_{tile['tile_name']}"
+                    s3_path = f"{config_info['links']['s3_path']}{data_type.lower()}_{tile['tile_name']}/{filename}"
                     DT.upload_file(save_path, s3_path)
                     tile['location'] = s3_path
                     if init['delete']:
