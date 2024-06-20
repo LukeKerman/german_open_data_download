@@ -65,7 +65,7 @@ def get_multipolygon_from_geojson(file_path):
     
     # Create a MultiPolygon from the list of polygons
     multi_polygon = MultiPolygon(polygons)
-    print(f"\rLoading GeoJSON files complete.\n{'-' * 29}")
+    print(f"\rLoading GeoJSON files complete.\n{'-' * 42}")
     
     return multi_polygon
 
@@ -251,12 +251,12 @@ def create_state_tile_file(init, config, show=False):
     # Save the state-tiles mapping to a json file
     save_json(meta_path, state_tiles)
 
-    plot_polygons_and_tiles(multi_polygon, state_tiles, state_geo_utm32, state_geo_utm33, show=show)
+    plot_polygons_and_tiles(multi_polygon, state_tiles, state_geo_utm32, state_geo_utm33, meta_path, show=show)
 
     display_results(meta_path)
 
 
-def plot_polygons_and_tiles(multi_polygon, state_tiles, state_geo, state_geo_of_utm33, show):
+def plot_polygons_and_tiles(multi_polygon, state_tiles, state_geo, state_geo_of_utm33, meta_path, show):
     """
     Plot the polygon, tiles, and state boundaries.
 
@@ -268,7 +268,7 @@ def plot_polygons_and_tiles(multi_polygon, state_tiles, state_geo, state_geo_of_
     - state_geo_of_utm33: A GeoDataFrame containing the state boundaries in UTM33 projection.
     """
 
-    print(f"{'-' * 29}\ngenerating plot...", end="", flush=True)
+    print(f"{'-' * 42}\ngenerating plot...", end="", flush=True)
 
     minx, miny, maxx, maxy = multi_polygon.bounds
     x_ext = maxx - minx
@@ -374,7 +374,8 @@ def plot_polygons_and_tiles(multi_polygon, state_tiles, state_geo, state_geo_of_
     ax.set_xticks([])
     ax.set_yticks([])
 
-    plt.savefig('tile_overview.png', dpi=dpi, bbox_inches='tight')
+    plot_path = os.path.join(os.path.dirname(meta_path), 'tile_overview.png')
+    plt.savefig(plot_path, dpi=dpi, bbox_inches='tight')
 
     if show:
         plt.show()
@@ -406,7 +407,7 @@ def display_results(file_path):
             total_tiles += tile_count
 
     if state_tile_counts:
-        print(f"\n\n{10 * '-'} RESULTS {10 * '-'}\n\nTile counts per state ({state_data['data_type']})")
+        print(f"\n\n{10 * '-'} RESULTS {10 * '-'}\n\n Tile counts per state ({state_data['data_type']})")
         print("-" * 29)
         for state, count in state_tile_counts:
             print(f"{state}:  {count:>5} tiles")
