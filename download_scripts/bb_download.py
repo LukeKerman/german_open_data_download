@@ -1,6 +1,4 @@
 import os
-import json
-from io import StringIO
 import pandas as pd
 import requests
 
@@ -10,15 +8,13 @@ def get_creation_date(url, tiles):
 
     print(f"Fetching meta data", end="", flush=True)
     meta_path = "tmp/bb_meta.csv"
+    os.makedirs("tmp", exist_ok=True)
 
     # Send a GET request to the URL
     response = requests.get(url)
     
-    # Check if the request was successful
     if response.status_code == 200:
-        # Open a local file in binary write mode
         with open(meta_path, 'wb') as f:
-            # Write the content of the response to the local file
             f.write(response.content)
     else:
         raise Exception(f"Failed to download file. Status code: {response.status_code}")
