@@ -6,8 +6,8 @@ import csv
 
 from _downloader import DownloadTools
 
-def get_id_and_creation_date(meta_url, tiles):
-    csv_path = f'helper/{os.path.basename(__file__)[:2].lower()}_ids.csv'
+def get_id_and_creation_date(meta_url, tiles, data_type):
+    csv_path = f'helper/{os.path.basename(__file__)[:2].lower()}_{data_type.lower()}_ids.csv'
 
     start_id = 1
     end_id = 6616
@@ -81,15 +81,15 @@ def download_tiles(tiles_data, config_data):
     total_tiles = len(tiles)
 
     meta_data_url = config_info['links']['meta_data_link']
-    get_id_and_creation_date(meta_data_url, tiles)
+    get_id_and_creation_date(meta_data_url, tiles, data_type)
 
     for i, tile in enumerate(tiles, start=1):
         tile_name = tile['tile_name']
         download_url = config_info['links']['download_link'].format(tile_name)
 
         filename = download_url.split('=')[-1]
-        save_path = f"{landing}/{state.lower()}/{filename}"
-        os.makedirs(f"{landing}/{state.lower()}", exist_ok=True)
+        save_path = f"{landing}/{state.lower()}/{data_type.lower()}_{tile['tile_name']}/{filename}"
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
         # Check if timestamp is within date range
         if DT.within_date_range(tile["timestamp"], init["date_range"]):
@@ -109,7 +109,7 @@ def download_tiles(tiles_data, config_data):
             if init['upload_s3']:
                 # Upload the file to S3
                 try:
-                    s3_path = f"{config_info['links']['s3_path']}{data_type.lower()}_{tile['tile_name']}"
+                    s3_path = f"{config_info['links']['s3_path']}{data_type.lower()}_{tile['tile_name']}/{filename}"
                     DT.upload_file(save_path, s3_path)
                     tile['location'] = s3_path
                     if init['delete']:
