@@ -44,7 +44,7 @@
             },
             "links": {
                 "download_link": "https://opengeodata.lgl-bw.de/data/dop20/dop20rgb_{}_2_bw.zip",
-                "meta_data_link": "",
+                "meta_data_link": "https://owsproxy.lgl-bw.de/owsproxy/wfs/WFS_LGL-BW_ATKIS_DOP_20_Bildflugkacheln_Aktualitaet?",
                 "s3_path": "s3://bw/dop/"
             }
         },
@@ -139,8 +139,8 @@
                 "y": 0
             },
             "links": {
-                "download_link": "https://geobasis-rlp.de/data/dop20rgbi/current/jp2/dop20rgbi_32_292_5548_2_rp.jp2",
-                "meta_data_link": "https://geobasis-rlp.de/data/dop20rgbi/current/metadata/DOP20UTM_2925548.xml",
+                "download_link": "https://geobasis-rlp.de/data/dop20rgbi/current/jp2/dop20rgbi_{}_2_rp.jp2",
+                "meta_data_link": "https://geobasis-rlp.de/data/dop20rgbi/current/metadata/DOP20UTM_{}.xml",
                 "s3_path": "s3://rp/dop/"
             }
         },
@@ -250,7 +250,7 @@
             },
             "links": {
                 "download_link": "",
-                "meta_data_link": "",
+                "meta_data_link": "https://owsproxy.lgl-bw.de/owsproxy/wfs/WFS_LGL-BW_ATKIS_DOP_20_Bildflugkacheln_Aktualitaet?",
                 "s3_path": "s3://bw/idsm/"
             }
         },
@@ -345,8 +345,8 @@
                 "y": 0
             },
             "links": {
-                "download_link": "https://geobasis-rlp.de/data/bdom20rgbi/current/las/bdom20rgbi_32_416_5597_2_rp.laz",
-                "meta_data_link": "",
+                "download_link": "https://geobasis-rlp.de/data/bdom20rgbi/current/las/bdom20rgbi_{}_2_rp.laz",
+                "meta_data_link": "https://geobasis-rlp.de/data/dop20rgbi/current/metadata/DOP20UTM_{}.xml",
                 "s3_path": "s3://rp/idsm/"
             }
         },
@@ -551,8 +551,8 @@
                 "y": 0
             },
             "links": {
-                "download_link": "https://geobasis-rlp.de/data/dgm1/current/tif/dgm01_32_416_5597_1_rp.tif",
-                "meta_data_link": "https://geobasis-rlp.de/data/dgm1/current/metadata/dgm01_32_416_5597.xml",
+                "download_link": "https://geobasis-rlp.de/data/dgm1/current/tif/dgm01_{}_1_rp.tif",
+                "meta_data_link": "https://geobasis-rlp.de/data/dgm1/current/metadata/dgm01_{}.xml",
                 "s3_path": "s3://rp/dtm/"
             }
         },
