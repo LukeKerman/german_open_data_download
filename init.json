@@ -1,11 +1,11 @@
 {
-    "geojson_path": "/Users/lukas/Documents/GitHub/german_open_data_download/bdl/test/test_AOI_BB.geojson",
+    "geojson_path": "/Users/lukas/Documents/GitHub/german_open_data_download/bdl/test/test_AOI_NW.geojson",
     "data_type": "DTM",
     "selected_states": null,
     "meta_path": "meta/tile_info.json",
     "local_landing_path": "tmp",
     "date_range": {
-        "begin": "2011-02-21",
+        "begin": null,
         "end": null
     },
     "upload_s3": false,
