@@ -5,6 +5,7 @@ from zipfile import ZipFile
 from cloudpathlib import CloudPath
 from datetime import datetime
 
+requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 class DownloadTools:
     def load_json(self, file_path):
@@ -46,7 +47,7 @@ class DownloadTools:
         os.rmdir(dir)
 
     def download_file(self, download_url, save_path, tile_info):
-        response = requests.get(download_url, stream=True)
+        response = requests.get(download_url, stream=True, verify=False)
         total_size = int(response.headers.get('content-length', 0))
         chunk_size = 512*1024 # 0.5 MByte
         downloaded_size = 0
@@ -118,7 +119,7 @@ class DownloadTools:
         return None
     
     def within_date_range(self, tile_timestamp, date_range):
-        
+
         def parse_date(date_str):
             date_formats = ["%Y-%m-%d", "%d-%m-%Y", "%d.%m.%Y"]
             for fmt in date_formats:
@@ -129,7 +130,10 @@ class DownloadTools:
             raise ValueError(f"Date format of '{date_str}' is not supported")
 
         # Convert tile_timestamp to datetime object
-        tile_date = parse_date(tile_timestamp)
+        if tile_timestamp:
+            tile_date = parse_date(tile_timestamp)
+        else:
+            return
         
         # Extract and convert begin and end dates from date_range
         begin_date = date_range.get("begin")
