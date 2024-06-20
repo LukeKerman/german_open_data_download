@@ -1,18 +1,20 @@
-# Ignore __pycache__ directories
 __pycache__/
-
-# Ignore all .pyc files
 *.pyc
-
-# Ignore all .pyo files
 *.pyo
+*.log
+*.tif
+*.xyz
+*.las
+*.laz
+*.png
+tile_info.json
 
-# Ignore environment directories
+
 env/
 venv/
 
-# Ignore other common files and directories
 .DS_Store
 .idea/
 .vscode/
-*.log
+tmp/
+meta/
