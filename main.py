@@ -39,6 +39,7 @@ def main():
             call_download_script(state, tiles_data, config_data)
             
     save_json(init['meta_path'], tiles_data)
+    print("Download process completed")
 
 if __name__ == "__main__":
     main()
