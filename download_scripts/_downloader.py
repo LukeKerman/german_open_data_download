@@ -1,7 +1,7 @@
 import json
 import os
 import requests
-from zipfile import ZipFile
+from zipfile import ZipFile, is_zipfile
 from cloudpathlib import CloudPath
 from datetime import datetime
 
@@ -47,10 +47,19 @@ class DownloadTools:
         os.rmdir(dir)
 
     def download_file(self, download_url, save_path, tile_info):
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
         response = requests.get(download_url, stream=True, verify=False)
         total_size = int(response.headers.get('content-length', 0))
+        content_type = response.headers.get('Content-Type', 0)
         chunk_size = 512*1024 # 0.5 MByte
         downloaded_size = 0
+
+        def is_zip_file(response):
+            zip_signature = b'PK\x03\x04'
+            initial_bytes = response.raw.read(4)
+            response.raw.seek(0)
+            return initial_bytes == zip_signature
         
         with open(save_path, 'wb') as file:
             for chunk in response.iter_content(chunk_size=chunk_size):
@@ -69,13 +78,13 @@ class DownloadTools:
         if not total_size:
             print(f"\rDownload of tile {tile_info['tile_name']} completed ({downloaded_size / (1024 * 1024):.1f} MB)", end="")
 
-        if download_url.endswith('.zip'):
+        if is_zipfile(save_path):
             with ZipFile(save_path, 'r') as zip_ref:
                 file_list = zip_ref.namelist()
+                extract_path = os.path.dirname(save_path)
                 if len(file_list) == 1:
-                    zip_ref.extractall(os.path.dirname(save_path))
+                    zip_ref.extractall(extract_path)
                 else:
-                    extract_path = save_path[:-4]
                     for member in zip_ref.namelist():
                         filename = os.path.basename(member)
                         # Skip directories and empty filenames
@@ -97,7 +106,10 @@ class DownloadTools:
 
     def find_file(self, save_path):
         # Create the directory path by removing the .zip extension
-        dir_path = save_path[:-4]
+        if "zip" in save_path:
+            dir_path = save_path[:-4]
+        else:
+            dir_path = save_path
 
         # List of file extensions to look for
         extensions = ('.tif', '.xyz', '.laz')
