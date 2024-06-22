@@ -1,63 +1,132 @@
 import os
-import json
 import requests
-import time
+import csv
 
-from _downloader import download_file, upload_file, delete_files_and_dir
+from _downloader import DownloadTools
 
-def get_creation_date(tiles, meta_url):
-    start_id = 537000#530448
-    end_id = 549479
+
+def get_id_and_creation_date(meta_url, tiles, data_type):
+    csv_path = f'helper/{os.path.basename(__file__)[:2].lower()}_{data_type.lower()}_ids.csv'
+
+    if data_type == "DOP":
+        start_id = 530448
+        end_id = 549479
 
     tile_ids = []
-    
-    for idx, tile_id in enumerate(range(start_id, end_id + 1)):
-        response = requests.get(meta_url.format(tile_id))
-        print(f"\rLoading meta data: {idx/(end_id-start_id):>3.1f}%", end="")
-        if response.status_code == 200:
-            data = response.json()
-            if data["success"] == "true" and "object" in data:
-                object_data = data["object"]
-                tile_nr = f'{object_data["bildnr"][:2]}_{object_data["bildnr"][2:]}'
-                for tile in tiles:
-                    if tile_nr == tile["tile_name"]:
+
+    if os.path.exists(csv_path):
+        with open(csv_path, mode='r', newline='') as file:
+            reader = csv.reader(file, delimiter=';')
+            next(reader)
+            tile_ids = [(row[0], row[1]) for row in reader]
+        for i, tile in enumerate(tiles, start=1):
+            progress = i/len(tiles)*100
+            print(f"\rLoading meta data: {progress:>3.1f}%", end="")
+            tile_id = [tile_id for tile_nr, tile_id in tile_ids if tile_nr == tile['tile_name']][0]
+            try:
+                response = requests.get(meta_url.format(tile_id))
+                if response.status_code == 200:
+                    data = response.json()
+                    object_data = data["object"]
+                    if data["success"] == "true" and object_data["bildnr"] == tile["tile_name"].replace('_', '', 1):
                         if tile["timestamp"] != None:
                             print(f"Timestamp already set for tile: {tile['tile_name']}")
                         else:
                             tile["timestamp"] = object_data["datum"][:10]
-                            tile_ids.append((tile["tile_name"], tile_id)) 
-                        break
-            #time.sleep(0.001)  # To avoid overwhelming the server with requests
-    return tiles, dict(tile_ids)
+                            print()
+            except Exception as e:
+                print(f"Error with {tile['tile_name']} (id: {tile_id}){e}")
+    else:
+        for tile_id in range(start_id, end_id + 1):
+            try:
+                response = requests.get(meta_url.format(tile_id))
+                print(f"\Requesting meta data: {tile_id/(end_id-start_id)*100:>3.1f}%", end="")
+                if response.status_code == 200:
+                    data = response.json()
+                    if data["success"] == "true" and "object" in data:
+                        object_data = data["object"]
+                        tile_nr = f"{object_data['bildnr'][:2]}_{object_data['bildnr'][2:]}"
+                        tile_ids.append((tile_nr, tile_id)) 
+                        for tile in tiles:
+                            if tile_nr == tile["tile_name"]:
+                                if tile["timestamp"] != None:
+                                    print(f"Timestamp already set for tile: {tile['tile_name']}")
+                                else:
+                                    tile["timestamp"] = object_data["datum"][:10]
+                                break
+            except Exception as e:
+                print(f"Error with id: {tile_id} {e}")
 
-def download_tiles(state_data, config):
-    tiles = state_data.get("tile_list")
-    data_type = state_data.get("data_type")
-    config_info = config[data_type]["TH"]
-    meta_url = config_info["links"]["meta_data_link"]
+        with open(csv_path, mode='w', newline='') as file:
+            writer = csv.writer(file, delimiter=';')
+            writer.writerow(['tile_nr', 'id'])
+            for row in tile_ids:
+                writer.writerow(row)
+    return dict(tile_ids)
 
-    tiles, tile_ids = get_creation_date(tiles, meta_url)
+def download_tiles(tiles_data, config_data):
+    state = os.path.basename(__file__)[:2].upper()
+    init, config = config_data
+    landing = init['local_landing_path']
 
-    for tile in tiles:
-        data_type = tile['data_type']
+    state_data = tiles_data[state]
+    tiles = state_data["tile_list"]
+    data_type = state_data["data_type"]
+
+    config_info = config[data_type][state]
+    meta_path = init['meta_path']
+
+    DT = DownloadTools()
+
+    total_tiles = len(tiles)
+
+    meta_data_url = config_info['links']['meta_data_link']
+    tile_ids = get_id_and_creation_date(meta_data_url, tiles, data_type)
+
+    for i, tile in enumerate(tiles, start=1):
         tile_name = tile['tile_name']
-        tile_id = tile_ids.get(tile_name)
-        
-        download_url = config_info['links']['download_link'].format(tile_id)
-        #meta_data_link = config_info['links']['meta_data_link']
-        save_path = f"./tmp/{data_type.lower()}_{tile_name}.{download_url.split('.')[-1]}"
-        os.makedirs("./tmp/", exist_ok=True)
+        download_url = config_info['links']['download_link'].format(tile_ids.get(tile_name))
+
+        save_path = f"{landing}/{state.lower()}/{data_type.lower()}_{tile_name}.zip"
+
+        # Check if timestamp is within date range
+        if DT.within_date_range(tile["timestamp"], init["date_range"]):
+            pass
+        else:
+            print(f"Tile {tile_name} not in date range")
+            continue
         
         # Download the file
-        #download_file(download_url, save_path, tile)
-        
-        # Upload the file to S3
-        s3_path = f"s3://your-bucket/dop_{tile['tile_name']}"
-        #upload_file(save_path, s3_path)
-        
-        # Update the tile information
-        #tile['location'] = s3_path
-        #tile['format'] = download_url.split('.')[-1]
-        #tile['timestamp'] = extract_creation_date(meta_data_link)
+        if not tile["location"]:
+            try:
+                DT.download_file(download_url, save_path, tile)
+                print(f" [{i} of {total_tiles}]")
+            except Exception as e:
+                print(f"Error while downloading to {tile_name}: {e}")
+                DT.delete_files_and_dir(save_path)
+
+            # Find the relevant files in the extract path
+            file_path = DT.find_file(save_path)
+
+            if init['upload_s3']:
+                # Upload the file to S3
+                try:
+                    s3_path = f"{config_info['links']['s3_path']}{data_type.lower()}_{tile['tile_name']}/{os.path.basename(file_path)}"
+                    DT.upload_file(save_path, s3_path)
+                    tile['location'] = s3_path
+                    if init['delete']:
+                        DT.delete_files_and_dir(os.path.dirname(save_path))
+                except Exception as e:
+                    print(f"Error while uploading to {s3_path}: {e}")
+            else:
+                tile['location'] = save_path.split('.')[0]
+                
+            # Update the tile format
+            tile['format'] = file_path.split('.')[-1]
+
+            DT.save_json(meta_path, tiles_data)
+        else:
+            print(f"Tile {tile['tile_name']} is already downloaded [{i} of {total_tiles}]")
     
-    delete_files_and_dir("./tmp")
+    if init['delete']:
+        DT.delete_files_and_dir(landing)
