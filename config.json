@@ -151,8 +151,8 @@
                 "y": 0
             },
             "links": {
-                "download_link": "",
-                "meta_data_link": "",
+                "download_link": "https://geodaten.schleswig-holstein.de/gaialight-sh/_apps/dladownload/multi.php?url=%2Fdata%2Fgeodaten%2Fsh%2FDOP20%2FDOP20_{}%2F{}%2F{}%2F&buttonClass=ebenen&id={}&type=dop20&action=start",
+                "meta_data_link": "https://geodaten.schleswig-holstein.de/gaialight-sh/_apps/dladownload/_ajax/details.php?&type=dop20&id={}",
                 "s3_path": "s3://sh/dop/"
             }
         },
@@ -164,7 +164,7 @@
             },
             "links": {
                 "download_link": "https://www.lvermgeo.sachsen-anhalt.de/de/gdp-dop20-auswahl.html",
-                "meta_data_link": "https://www.geodatenportal.sachsen-anhalt.de/arcgis/rest/services/Geobasisdaten/atkis_geobasis_bestand/MapServer/5/query?where=NAME%3D%27326745760%27&outFields=BFDATUM&returnGeometry=false&f=json",
+                "meta_data_link": "https://www.geodatenportal.sachsen-anhalt.de/arcgis/rest/services/Geobasisdaten/atkis_geobasis_bestand/MapServer/5/query?where=NAME%3D%27326745760%27&outFields=BFDATUM,NAME&returnGeometry=false&f=json",
                 "s3_path": "s3://st/dop/"
             }
         },
@@ -357,8 +357,8 @@
                 "y": 0
             },
             "links": {
-                "download_link": "",
-                "meta_data_link": "",
+                "download_link": "https://geodaten.schleswig-holstein.de/gaialight-sh/_apps/dladownload/multi.php?url=%2Fdata%2Fgeodaten%2Fsh%2FbDOM%2FbDOM_{}%2F{}%2F{}%2F&buttonClass=ebenen&id={}&type=bdom&action=start",
+                "meta_data_link": "https://geodaten.schleswig-holstein.de/gaialight-sh/_apps/dladownload/_ajax/details.php?&type=bdom&id={}",
                 "s3_path": "s3://sh/idsm/"
             }
         },
@@ -370,7 +370,7 @@
             },
             "links": {
                 "download_link": "https://www.lvermgeo.sachsen-anhalt.de/de/gdp-bdom20.html",
-                "meta_data_link": "https://www.geodatenportal.sachsen-anhalt.de/arcgis/rest/services/Geobasisdaten/atkis_geobasis_bestand/MapServer/6/query?where=NAME%3D%27326745760%27&outFields=BFDATUM&returnGeometry=false&f=json",
+                "meta_data_link": "https://www.geodatenportal.sachsen-anhalt.de/arcgis/rest/services/Geobasisdaten/atkis_geobasis_bestand/MapServer/6/query?where=NAME%3D%27326745760%27&outFields=BFDATUM,NAME&returnGeometry=false&f=json",
                 "s3_path": "s3://st/idsm/"
             }
         },
@@ -563,8 +563,8 @@
                 "y": 0
             },
             "links": {
-                "download_link": "",
-                "meta_data_link": "",
+                "download_link": "https://geodaten.schleswig-holstein.de/gaialight-sh/_apps/dladownload/multi.php?url=dgm1_{}_1_sh.xyz&id={}&type=dgm1&action=start",
+                "meta_data_link": "https://geodaten.schleswig-holstein.de/gaialight-sh/_apps/dladownload/_ajax/details.php?&type=dgm1&id={}",
                 "s3_path": "s3://sh/dtm/"
             }
         },
@@ -575,7 +575,7 @@
                 "y": 0
             },
             "links": {
-                "download_link": "",
+                "download_link": "https://www.lvermgeo.sachsen-anhalt.de/de/gdp-dgm2.html",
                 "meta_data_link": "",
                 "s3_path": "s3://st/dtm/"
             }
