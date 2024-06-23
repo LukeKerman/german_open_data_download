@@ -112,7 +112,7 @@ class DownloadTools:
             dir_path = save_path
 
         # List of file extensions to look for
-        extensions = ('.tif', '.xyz', '.laz')
+        extensions = ('.tif', '.xyz', '.laz', '.las')
         found_files = []
 
         # Search for files with the specified extensions
@@ -145,7 +145,7 @@ class DownloadTools:
         if tile_timestamp:
             tile_date = parse_date(tile_timestamp)
         else:
-            return
+            return True
         
         # Extract and convert begin and end dates from date_range
         begin_date = date_range.get("begin")
