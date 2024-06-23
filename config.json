@@ -91,7 +91,7 @@
                 "y": 0
             },
             "links": {
-                "download_link": "",
+                "download_link": "https://daten-hamburg.de/geographie_geologie_geobasisdaten/digitale_orthophotos/",
                 "meta_data_link": "",
                 "s3_path": "s3://he/dop/"
             }
@@ -116,7 +116,7 @@
             },
             "links": {
                 "download_link": "https://arcgis-geojson.s3.eu-de.cloud-object-storage.appdomain.cloud/dop20/lgln-opengeodata-dop20.geojson",
-                "meta_data_link": "",
+                "meta_data_link": "not_required",
                 "s3_path": "s3://ni/dop/"
             }
         },
@@ -164,7 +164,7 @@
             },
             "links": {
                 "download_link": "https://www.lvermgeo.sachsen-anhalt.de/de/gdp-dop20-auswahl.html",
-                "meta_data_link": "https://www.geodatenportal.sachsen-anhalt.de/arcgis/rest/services/Geobasisdaten/atkis_geobasis_bestand/MapServer/5/query?where=NAME%3D%27326745760%27&outFields=BFDATUM,NAME&returnGeometry=false&f=json",
+                "meta_data_link": "https://www.geodatenportal.sachsen-anhalt.de/arcgis/rest/services/Geobasisdaten/atkis_geobasis_bestand/MapServer/5/query?where=NAME%3D%27{}%27&outFields=BFDATUM,NAME&returnGeometry=false&f=json",
                 "s3_path": "s3://st/dop/"
             }
         },
@@ -199,7 +199,7 @@
                 "y": 0
             },
             "links": {
-                "download_link": "",
+                "download_link": "https://geocloud.landesvermessung.sachsen.de/index.php/s/1HqBlZUPeLlmKqF/download?path=%2F&files[]=dop20rgbi_33356_5684_2_sn_tiff.zip",
                 "meta_data_link": "",
                 "s3_path": "s3://sn/dop/"
             }
@@ -297,7 +297,7 @@
                 "y": 0
             },
             "links": {
-                "download_link": "",
+                "download_link": "https://daten-hamburg.de/geographie_geologie_geobasisdaten/digitales_hoehenmodell_bdom/DOM1_XYZ_HH_2020_04_30.zip",
                 "meta_data_link": "",
                 "s3_path": "s3://he/iDSM/"
             }
@@ -370,7 +370,7 @@
             },
             "links": {
                 "download_link": "https://www.lvermgeo.sachsen-anhalt.de/de/gdp-bdom20.html",
-                "meta_data_link": "https://www.geodatenportal.sachsen-anhalt.de/arcgis/rest/services/Geobasisdaten/atkis_geobasis_bestand/MapServer/6/query?where=NAME%3D%27326745760%27&outFields=BFDATUM,NAME&returnGeometry=false&f=json",
+                "meta_data_link": "https://www.geodatenportal.sachsen-anhalt.de/arcgis/rest/services/Geobasisdaten/atkis_geobasis_bestand/MapServer/6/query?where=NAME%3D%27{}%27&outFields=BFDATUM,NAME&returnGeometry=false&f=json",
                 "s3_path": "s3://st/idsm/"
             }
         },
@@ -503,7 +503,7 @@
                 "y": 0
             },
             "links": {
-                "download_link": "",
+                "download_link": "https://daten-hamburg.de/geographie_geologie_geobasisdaten/Digitales_Hoehenmodell/DGM1/dgm1_hh_2022-04-30.zip",
                 "meta_data_link": "",
                 "s3_path": "s3://he/dtm/"
             }
@@ -611,7 +611,7 @@
                 "y": 0
             },
             "links": {
-                "download_link": "",
+                "download_link": "https://geocloud.landesvermessung.sachsen.de/index.php/s/388qlKhVVdMwbX9/download?path=%2F&files[]=dgm1_33388_5694_2_sn_xyz.zip",
                 "meta_data_link": "",
                 "s3_path": "s3://sn/dtm/"
             }
