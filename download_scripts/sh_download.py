@@ -96,7 +96,7 @@ def download_tiles(tiles_data, config_data):
     init, config = config_data
     landing = init['local_landing_path']
 
-    state_data = tiles_data[state]
+    state_data = tiles_data["tiles"][state]
     tiles = state_data["tile_list"]
     data_type = state_data["data_type"]
 

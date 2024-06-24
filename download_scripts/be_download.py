@@ -45,7 +45,7 @@ def download_tiles(tiles_data, config_data):
     init, config = config_data
     landing = init['local_landing_path']
 
-    state_data = tiles_data[state]
+    state_data = tiles_data["tiles"][state]
     tiles = state_data["tile_list"]
     data_type = state_data["data_type"]
 
@@ -64,8 +64,8 @@ def download_tiles(tiles_data, config_data):
         download_url = config_info['links']['download_link'].format(tile_name)
 
         filename = f"{data_type.lower()}_{tile_name}.{download_url.split('.')[-1]}"
-        save_path = f"{landing}/{state.lower()}/{filename}"
-        os.makedirs(f"{landing}/{state.lower()}", exist_ok=True)
+        save_path = f"{landing}/{state.lower()}/{data_type.lower()}_{tile['tile_name']}/{filename}"
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
         # Check if timestamp is within date range
         if DT.within_date_range(tile["timestamp"], init["date_range"]):
@@ -84,7 +84,10 @@ def download_tiles(tiles_data, config_data):
                 DT.delete_files_and_dir(save_path)
 
             # Find the relevant files in the extract path
-            file_path = DT.find_file(save_path)
+            file_path = DT.find_file(os.path.dirname(save_path))
+
+            # Update the tile format
+            tile['format'] = file_path.split('.')[-1]
 
             if init['upload_s3']:
                 # Upload the file to S3
@@ -97,9 +100,7 @@ def download_tiles(tiles_data, config_data):
                 except Exception as e:
                     print(f"Error while uploading to {s3_path}: {e}")
             else:
-                tile['location'] = save_path.split('.')[0]
-            # Update the tile format
-            tile['format'] = file_path.split('.')[-1]
+                tile['location'] = os.path.dirname(file_path)
 
             DT.save_json(meta_path, tiles_data)
         else:

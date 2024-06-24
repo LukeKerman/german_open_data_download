@@ -145,8 +145,11 @@ def create_state_tile_file(init, config, show=False):
     print(f"\n### TILE BY STATE CREATOR for {data_type} ###\n")
 
     if os.path.exists(meta_path):
-        print("Tiles information file already exists. Continuing with the current file.\n")
-        return
+        full_data = load_json(meta_path)
+        aoi_path = full_data["aoi_path"]
+        if aoi_path == geojson_path:
+            print("Tiles information file already exists. Continuing with the current file.\n")
+            return
     else:
         os.makedirs(os.path.dirname(meta_path), exist_ok=True)
 
@@ -165,7 +168,10 @@ def create_state_tile_file(init, config, show=False):
     state_geo_utm33 = gpd.read_file(state_geojson_path_utm33)
     
     # Prepare a dictionary to hold the tiles for each state
-    state_tiles = {}
+    state_tiles = {
+        "aoi_path": geojson_path,  # Adding the AOI path to the dictionary
+        "tiles": {}  # Dictionary to hold tile information by state
+    }
 
     # Define transformers
     transform_to_utm33 = Transformer.from_crs("EPSG:25832", "EPSG:25833", always_xy=True).transform
@@ -178,10 +184,10 @@ def create_state_tile_file(init, config, show=False):
         state_name = state_row['GEN']
         if selected_states and state_name not in selected_states:
             continue
-        state_tiles[state_name] = {
+        state_tiles["tiles"][state_name] = {
             "data_type": data_type,
             "tile_list": []
-            }
+        }
         
         # Get the part of the multi_polygon that intersects with the current state
         intersecting_polygon = multi_polygon.intersection(state_row['geometry'])
@@ -196,7 +202,7 @@ def create_state_tile_file(init, config, show=False):
                     tile_poly = Polygon(tile_coords) 
                     if state_row['geometry'].intersects(tile_poly):
                         tile_coords_formatted = [(x, y) for x, y in tile_coords]
-                        state_tiles[state_name]["tile_list"].append({
+                        state_tiles["tiles"][state_name]["tile_list"].append({
                             "tile_name": tile_name,
                             "timestamp": None,
                             "location": None,
@@ -208,19 +214,19 @@ def create_state_tile_file(init, config, show=False):
             else:
                 print(f"Download script for {state_name} not found")
 
+    # Transform the AOI polygon to EPSG:25833
+    multi_polygon_utm33 = transform(transform_to_utm33, multi_polygon)
+
     # Process EPSG:25833 states
     for _, state_row in state_geo_utm33.iterrows():
         state_name = state_row['GEN']
         if selected_states and state_name not in selected_states:
             continue
-        state_tiles[state_name] = {
+        state_tiles["tiles"][state_name] = {
             "data_type": data_type,
             "tile_list": []
-            }
+        }
         
-        # Transform the AOI polygon to EPSG:25833
-        multi_polygon_utm33 = transform(transform_to_utm33, multi_polygon)
-
         # Get the part of the multi_polygon that intersects with the current state
         intersecting_polygon = multi_polygon_utm33.intersection(state_row['geometry'])
 
@@ -234,9 +240,9 @@ def create_state_tile_file(init, config, show=False):
                     tile_poly = Polygon(tile_coords)
                     if state_row['geometry'].intersects(tile_poly):
                         # Transform tile bounding box back to EPSG:25832
-                        tile_coords_utm32 = [transform_to_utm32(x, y) for x, y in tile_coords]
-                        tile_coords_formatted = [(x, y) for x, y in tile_coords_utm32]
-                        state_tiles[state_name]["tile_list"].append({
+                        tile_coords_formatted = [transform_to_utm32(x, y) for x, y in tile_coords]
+
+                        state_tiles["tiles"][state_name]["tile_list"].append({
                             "tile_name": tile_name,
                             "timestamp": None,
                             "location": None,
@@ -251,7 +257,7 @@ def create_state_tile_file(init, config, show=False):
     # Save the state-tiles mapping to a json file
     save_json(meta_path, state_tiles)
 
-    plot_polygons_and_tiles(multi_polygon, state_tiles, state_geo_utm32, state_geo_utm33, meta_path, show=show)
+    plot_polygons_and_tiles(multi_polygon, state_tiles["tiles"], state_geo_utm32, state_geo_utm33, meta_path, show=show)
 
     display_results(meta_path)
 
@@ -390,7 +396,8 @@ def display_results(file_path):
     Parameters:
     - file_path: Path to the JSON file containing the results.
     """
-    data = load_json(file_path)
+    full_data = load_json(file_path)
+    data = full_data["tiles"]
     
     if not data:
         print("\nNo tile data found in the file.\n")

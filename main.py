@@ -17,13 +17,13 @@ def call_download_script(state, tiles_data, config):
         module = __import__(module_name, fromlist=['download_tiles'])
     module.download_tiles(tiles_data, config)
 
-def main():
+def main(init_path):
     # Add the download_scripts directory to the Python path
     sys.path.append(os.path.join(os.path.dirname(__file__), 'download_scripts'))
 
     # Load the JSON files
-    init = load_json('./init.json')
-    config = load_json('./config.json')
+    init = load_json(init_path)
+    config = load_json('config.json')
 
     config_data = (init, config)
 
@@ -32,7 +32,7 @@ def main():
     tiles_data = load_json(init['meta_path'])
     
     # Iterate through each state in the tiles data
-    for state, state_data in tiles_data.items():
+    for state, state_data in tiles_data["tiles"].items():
         if state_data["tile_list"]:
             print(f"INITIALIZING DOWNLOAD PROCESS\n\nCalling {state.lower()}_download.py for state {state} with {len(state_data['tile_list'])} tiles.")
             call_download_script(state, tiles_data, config_data)
@@ -41,4 +41,7 @@ def main():
     print("Download process completed")
 
 if __name__ == "__main__":
-    main()
+
+    init_path = sys.argv[1] if len(sys.argv) > 1 else 'init.json'
+
+    main(init_path)
