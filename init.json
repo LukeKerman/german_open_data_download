@@ -1,8 +1,8 @@
 {
-    "geojson_path": "/Users/lukas/Documents/GitHub/german_open_data_download/bdl/test/test_AOI_NW.geojson",
+    "aoi_path": "/Users/lukas/Documents/GitHub/german_open_data_download/bdl/test/test_AOI_X1.geojson",
     "data_type": "DTM",
     "selected_states": null,
-    "meta_path": "meta/tile_info.json",
+    "meta_path": "meta/tile_data.json",
     "local_landing_path": "tmp",
     "date_range": {
         "begin": null,
