@@ -1,7 +1,7 @@
 import os
 import sys
 
-from state_tile_creator import load_json, save_json, create_state_tile_file
+from state_tile_creator import load_json, save_json, create_state_tile_file, convert_and_save_geojson
 
 
 def call_download_script(state, tiles_data, config):
@@ -40,6 +40,7 @@ def main(init_path):
             call_download_script(state, tiles_data, config_data)
             
     save_json(init['meta_path'], tiles_data)
+    convert_and_save_geojson(init['meta_path'], tiles_data)
     print("\nDownload process completed.")
 
 if __name__ == "__main__":
