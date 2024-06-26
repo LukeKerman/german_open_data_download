@@ -65,6 +65,10 @@ def download_tiles(tiles_data, config_data):
 
     total_tiles = len(tiles)
 
+    if not config_info['links']['download_link']:
+        print(f"No links provided for {state} ({data_type}) in configuration file.")
+        return
+
     meta_data_url = config_info['links']['meta_data_link']
     get_creation_date(meta_data_url, tiles, data_type)
 

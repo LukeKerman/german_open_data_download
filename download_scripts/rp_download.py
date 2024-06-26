@@ -94,7 +94,7 @@ def download_tiles(tiles_data, config_data):
                 except Exception as e:
                     print(f"Error while uploading to {s3_path}: {e}")
             else:
-                tile['location'] = save_path.split('.')[0]
+                tile['location'] = os.path.dirname(save_path)
             # Update the tile format
             tile['format'] = save_path.split('.')[-1]
 

@@ -8,15 +8,13 @@ def get_creation_date(url, tiles):
 
     print(f"Fetching meta data", end="", flush=True)
     meta_path = "tmp/bb_meta.csv"
+    os.makedirs("tmp", exist_ok=True)
 
     # Send a GET request to the URL
     response = requests.get(url)
     
-    # Check if the request was successful
     if response.status_code == 200:
-        # Open a local file in binary write mode
         with open(meta_path, 'wb') as f:
-            # Write the content of the response to the local file
             f.write(response.content)
     else:
         raise Exception(f"Failed to download file. Status code: {response.status_code}")
@@ -60,11 +58,11 @@ def download_tiles(tiles_data, config_data):
     get_creation_date(meta_data_url, tiles)
 
     for i, tile in enumerate(tiles, start=1):
-        tile_name = tile['tile_name'].replace('_', '', 1).replace('_', '-')
-        download_url = config_info['links']['download_link'].format(tile_name)
+        tile_name = tile['tile_name']
+        download_url = config_info['links']['download_link'].format(tile['tile_name'].replace('_', '', 1).replace('_', '-'))
 
         filename = f"{data_type.lower()}_{tile_name}.{download_url.split('.')[-1]}"
-        save_path = f"{landing}/{state.lower()}/{data_type.lower()}_{tile['tile_name']}/{filename}"
+        save_path = f"{landing}/{state.lower()}/{data_type.lower()}_{tile_name}/{filename}"
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
         # Check if timestamp is within date range
@@ -92,11 +90,11 @@ def download_tiles(tiles_data, config_data):
             if init['upload_s3']:
                 # Upload the file to S3
                 try:
-                    s3_path = f"{config_info['links']['s3_path']}{data_type.lower()}_{tile['tile_name']}/{os.path.basename(file_path)}"
+                    s3_path = f"{config_info['links']['s3_path']}{data_type.lower()}_{tile_name}/{os.path.basename(file_path)}"
                     DT.upload_file(file_path, s3_path)
                     tile['location'] = s3_path
                     if init['delete']:
-                        DT.delete_files_and_dir(os.path.dirname(save_path))
+                        DT.delete_files_and_dir(os.path.dirname(file_path))
                 except Exception as e:
                     print(f"Error while uploading to {s3_path}: {e}")
             else:
@@ -104,7 +102,7 @@ def download_tiles(tiles_data, config_data):
 
             DT.save_json(meta_path, tiles_data)
         else:
-            print(f"Tile {tile['tile_name']} is already downloaded [{i} of {total_tiles}]")
+            print(f"Tile {tile_name} is already downloaded [{i} of {total_tiles}]")
     
     if init['delete']:
         DT.delete_files_and_dir(landing)

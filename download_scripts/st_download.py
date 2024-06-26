@@ -61,11 +61,40 @@ def get_tile_id(url):
 
     return prepare_link, dict(tile_ids)
 
+def find_meta_file_and_get_date(dir_path, tile):
+    # Search for the .meta file
+    meta_file = None
+    for root, _, files in os.walk(dir_path):
+        for file in files:
+            if file.endswith('.meta'):
+                meta_file = os.path.join(root, file)
+                break
+        if meta_file:
+            break
+
+    if not meta_file:
+        return
+
+    # Read the .meta file and search for the Aktualitaet entry
+    with open(meta_file, 'r', encoding='latin-1') as file:
+        content = file.read()
+
+    # Find the Aktualitaet entry
+    match = re.search(r'Aktualitaet:\s*([0-9]{4}-[0-9]{2}(?:-[0-9]{2})?)', content)
+    if match:
+        date = match.group(1)
+        # Append -01 if the date is in YYYY-MM format
+        if re.match(r'^[0-9]{4}-[0-9]{2}$', date):
+            date += '-01'
+            tile["timestamp"] = date
+    else:
+        return
+
 def request_download_link(prep_url, tile_name, tile_id):
     print(f"\rRequesting download link for tile: {tile_name}", end="", flush=True)
     full_prepare_link = f"{prep_url}items={tile_id}&format=zip"
     download_link = requests.get(full_prepare_link)
-    print(f"\r{43 * ' '}", end="")
+    print(f"\r{46 * ' '}", end="")
     return download_link.text
 
 def download_tiles(tiles_data, config_data):
@@ -116,6 +145,10 @@ def download_tiles(tiles_data, config_data):
                 DT.delete_files_and_dir(save_path)
 
             file_path = DT.find_file(os.path.dirname(save_path))
+
+            if data_type == "DTM":
+                find_meta_file_and_get_date(os.path.dirname(save_path), tile)
+                
 
             # Update the tile format
             tile['format'] = file_path.split('.')[-1]
