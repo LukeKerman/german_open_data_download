@@ -1,0 +1,8 @@
+cloudpathlib
+geopandas
+matplotlib
+numpy
+pandas
+pyproj
+Requests
+Shapely
