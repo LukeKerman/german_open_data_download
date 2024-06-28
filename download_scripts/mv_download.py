@@ -29,10 +29,7 @@ def get_id_and_creation_date(meta_url, tiles, data_type):
                     data = response.json()
                     object_data = data["object"]
                     if data["success"] == "true" and object_data["kachel_nr"] == tile["tile_name"]:
-                        if tile["timestamp"] != None:
-                            print(f"Timestamp already set for tile: {tile['tile_name']}")
-                        else:
-                            tile["timestamp"] = object_data["aktualitaet"][:10]
+                        tile["timestamp"] = object_data["aktualitaet"][:10]
                 #time.sleep(0.001)  # To avoid overwhelming the server with requests
             except Exception as e:
                 print(f"Error with {tile['tile_name']} (id: {tile_id}){e}")
@@ -49,10 +46,7 @@ def get_id_and_creation_date(meta_url, tiles, data_type):
                         tile_ids.append((tile_nr, tile_id)) 
                         for tile in tiles:
                             if tile_nr == tile["tile_name"]:
-                                if tile["timestamp"] != None:
-                                    print(f"Timestamp already set for tile: {tile['tile_name']}")
-                                else:
-                                    tile["timestamp"] = object_data["aktualitaet"][:10]
+                                tile["timestamp"] = object_data["aktualitaet"][:10]
                                 break
                 #time.sleep(0.001)  # To avoid overwhelming the server with requests
             except Exception as e:

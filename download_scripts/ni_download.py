@@ -30,9 +30,8 @@ def download_tiles(tiles_data, config_data):
         print(f"Error: No reponse from server {e}")
 
     for i, tile in enumerate(tiles, start=1):
+        tile_name = tile['tile_name']
         if not tile["location"]:
-            tile_name = tile['tile_name']
-
             for feature in result['features']:
                 if feature['properties']['tile_id'] == tile['tile_name'].replace("_",""):
                     match data_type:
