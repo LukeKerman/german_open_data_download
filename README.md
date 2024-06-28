@@ -44,6 +44,7 @@ This file contains initialization parameters used by the main script. Key parame
   "upload_s3": false,
   "delete": false
 }
+```
 
 ### config.json
 This file defines configurations for different data types and states, including tile sizes, download links, metadata links, and S3 paths.
@@ -79,6 +80,7 @@ This file defines configurations for different data types and states, including 
     // Additional configurations for other states and data types...
   }
 }
+```
 
 # Scripts
 
@@ -103,5 +105,6 @@ A script for downloading data specific to Baden-Württemberg (BW).
 
 ```bash
 python main.py
+```
 
 **Note:** This project is currently under construction. The README will be further updated in the future with more detailed information.
