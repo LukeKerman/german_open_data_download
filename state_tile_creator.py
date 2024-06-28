@@ -1,93 +1,79 @@
-"""This script processes GeoJSON or CSV data to create tiles within specified polygons and plots the results."""
-
 import json
 import os
 import time
 import re
+
 import numpy as np
 import pandas as pd
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-from matplotlib.collections import PatchCollection
-from matplotlib.patches import Polygon as MplPolygon
 import geopandas as gpd
 from pyproj import Transformer, CRS
 from shapely.geometry import box, Polygon, MultiPolygon
 from shapely.ops import transform
-from geojson import Feature, Polygon as GeoPolygon, FeatureCollection
+from geojson import Feature, Polygon as GeoPolygon
+import folium
+import matplotlib.pyplot as plt
+
 
 def load_json(file_path):
     """
-    Load a JSON file from the specified file path.
+    Loads a JSON file from the specified file path.
 
-    Parameters:
-    - file_path (str): Path to the JSON file.
+    Args:
+        file_path (str): The path to the JSON file.
 
     Returns:
-    - dict: The loaded JSON data.
+        dict: The loaded JSON data.
     """
     with open(file_path, 'r') as f:
         return json.load(f)
-    
+
 def save_json(file_path, data):
     """
-    Save data to a JSON file at the specified file path.
+    Saves data to a JSON file at the specified file path.
 
-    Parameters:
-    - file_path (str): Path to the JSON file.
-    - data (dict): Data to be saved.
+    Args:
+        file_path (str): The path to the JSON file.
+        data (dict): The data to save to the JSON file.
     """
     with open(file_path, 'w') as f:
         json.dump(data, f, indent=4)
 
 def get_multipolygon_from_geojson(file_path):
     """
-    Extract a MultiPolygon from a GeoJSON file.
+    Loads a GeoJSON file and ensures its CRS is EPSG:25832.
 
-    Parameters:
-    - file_path (str): Path to the GeoJSON file.
+    Args:
+        file_path (str): The path to the GeoJSON file.
 
     Returns:
-    - MultiPolygon: A MultiPolygon containing all polygons and multipolygons from the GeoJSON file.
+        MultiPolygon: A MultiPolygon object containing all polygons and multipolygons from the GeoJSON file.
     """
-    print("Loading GeoJSON files", end="")
     gdf = gpd.read_file(file_path)
-
     if gdf.crs != 'EPSG:25832':
         gdf = gdf.to_crs('EPSG:25832')
-    
     polygons = [geom for geom in gdf.geometry if geom.geom_type in ['Polygon', 'MultiPolygon']]
     multi_polygon = MultiPolygon([poly for geom in polygons for poly in (geom.geoms if geom.geom_type == 'MultiPolygon' else [geom])])
-    
-    file_name = os.path.basename(file_path)
-    print(f"\rGeoJSON file: {file_name}\n{'-' * 42}")
-    
     return multi_polygon
 
-def create_tiles_within_polygon(polygon, config, data_type, state_name, crs="UTM32"):
+def create_tiles_within_polygon(polygon, config, data_type, state_name, crs="EPSG:25832"):
     """
-    Create a grid of tiles within the given polygon.
+    Creates tiles within a given polygon.
 
-    Parameters:
-    - polygon (Polygon or MultiPolygon): The polygon geometry.
-    - config (dict): Configuration dictionary containing tile information.
-    - data_type (str): Data type for the tiles.
-    - state_name (str): Name of the state for which tiles are being created.
-    - crs (str): Coordinate reference system to be used (default is "UTM32").
+    Args:
+        polygon (Polygon or MultiPolygon): The input polygon.
+        config (dict): The configuration dictionary containing tile size information.
+        data_type (str): The type of data.
+        state_name (str): The name of the state.
+        crs (str, optional): The coordinate reference system. Defaults to "EPSG:25832".
 
     Returns:
-    - list: A list of tile names and their geometries that are partially or fully within the polygon.
+        list: A list of tuples, each containing a tile name and its coordinates.
     """
-
     tile_info = config[data_type][state_name]['tile_info']
     tile_size = tile_info['tile_size']
     start_x = tile_info['x']
     start_y = tile_info['y']
-
-    utm = 32 if crs == "UTM32" else 33 if crs == "UTM33" else ValueError("Error in CRS definition. UTM needs to be UTM32 or UTM33")
-
     min_x, min_y, max_x, max_y = polygon.bounds
-
     tiles_in_polygon = []
 
     x_coords = np.arange(np.floor(min_x / tile_size) * tile_size - start_x, np.ceil(max_x / tile_size) * tile_size + start_x, tile_size)
@@ -97,7 +83,7 @@ def create_tiles_within_polygon(polygon, config, data_type, state_name, crs="UTM
         for y in y_coords:
             tile_bbox = box(x, y, x + tile_size, y + tile_size)
             if tile_bbox.intersects(polygon):
-                tile_name = f"{utm}_{int(x // 1000):03}_{int(y // 1000):04}"
+                tile_name = f"{str(crs)[-2:]}_{int(x // 1000):03}_{int(y // 1000):04}"
                 tile_coords = list(tile_bbox.exterior.coords)[:-1]
                 tiles_in_polygon.append((tile_name, tile_coords))
     
@@ -105,12 +91,12 @@ def create_tiles_within_polygon(polygon, config, data_type, state_name, crs="UTM
 
 def print_progress(state_name, current, total):
     """
-    Print the progress of tile creation for a state.
+    Prints the progress of a task.
 
-    Parameters:
-    - state_name (str): Name of the state.
-    - current (int): Current progress value.
-    - total (int): Total number of tiles.
+    Args:
+        state_name (str): The name of the state.
+        current (int): The current progress value.
+        total (int): The total value for completion.
     """
     progress = (current / total) * 100
     if progress == 100:
@@ -120,23 +106,22 @@ def print_progress(state_name, current, total):
 
 def process_state_tiles(state_row, multi_polygon, config, data_type, crs, transform_func=None, show_progress=True):
     """
-    Process tiles for a specific state.
+    Processes tiles for a given state.
 
-    Parameters:
-    - state_row (GeoSeries): Row of the state's GeoDataFrame.
-    - multi_polygon (MultiPolygon): The multipolygon representing the area of interest.
-    - config (dict): Configuration dictionary containing tile information.
-    - data_type (str): Data type for the tiles.
-    - crs (str): Coordinate reference system.
-    - transform_func (callable, optional): Function to transform coordinates.
-    - show_progress (bool): Whether to show progress.
+    Args:
+        state_row (GeoSeries): The GeoSeries containing state geometry.
+        multi_polygon (MultiPolygon): The MultiPolygon object for the area of interest.
+        config (dict): The configuration dictionary.
+        data_type (str): The type of data.
+        crs (str): The coordinate reference system.
+        transform_func (function, optional): A function to transform coordinates. Defaults to None.
+        show_progress (bool, optional): Whether to show progress. Defaults to True.
 
     Returns:
-    - list: A list of dictionaries containing tile information.
+        list: A list of dictionaries, each containing tile information.
     """
     state_name = state_row['GEN']
     intersecting_polygon = multi_polygon.intersection(state_row['geometry'])
-
     if intersecting_polygon.is_empty or intersecting_polygon.bounds is None:
         return []
 
@@ -160,149 +145,12 @@ def process_state_tiles(state_row, multi_polygon, config, data_type, crs, transf
             time.sleep(0.001)
     return state_tile_list
 
-def create_state_tile_file(init, config, show=False):
-    """
-    Main function to create state tile files and plot the results.
-
-    Parameters:
-    - init (dict): Initialization dictionary containing paths and settings.
-    - config (dict): Configuration dictionary containing tile information.
-    - show (bool): Boolean to indicate whether to display the plot.
-    """
-    aoi_path = init['aoi_path']
-    data_type = init['data_type']
-    meta_path = init['meta_path']
-    selected_states = init['selected_states']
-
-    print(f"\n### TILE BY STATE CREATOR for {data_type} ###\n")
-
-    if os.path.exists(meta_path):
-        full_data = load_json(meta_path)
-        if full_data["aoi_name"] == os.path.basename(aoi_path) and full_data["data_type"] == data_type:
-            print(f"Tile data file for '{full_data['aoi_name']}' ({data_type}) already exists.\nProceeding with the existing file.")
-            display_results(meta_path)
-            return
-    else:
-        os.makedirs(os.path.dirname(meta_path), exist_ok=True)
-
-    selected_states = selected_states or []
-    state_files_dir = 'bdl'
-    state_geo_utm32 = gpd.read_file(os.path.join(state_files_dir, 'DE_bdl_utm32.geojson'))
-    state_geo_utm33 = gpd.read_file(os.path.join(state_files_dir, 'DE_bdl_utm33.geojson'))
-    
-    state_tiles = {"aoi_name": os.path.basename(aoi_path), "data_type": data_type, "tiles": {}}
-    transform_to_utm33 = Transformer.from_crs("EPSG:25832", "EPSG:25833", always_xy=True).transform
-    transform_to_utm32 = Transformer.from_crs("EPSG:25833", "EPSG:25832", always_xy=True).transform
-
-    if aoi_path.endswith(".csv"):
-        state_tiles = create_json_from_csv(aoi_path, config, init)
-        plot_polygons_and_tiles(None, state_tiles["tiles"], state_geo_utm32, state_geo_utm33, meta_path, show=show)
-    else:
-        multi_polygon = get_multipolygon_from_geojson(aoi_path)
-
-        for _, state_row in state_geo_utm32.iterrows():
-            state_name = state_row['GEN']
-            if not selected_states or state_name in selected_states:
-                state_tiles["tiles"][state_name] = {"data_type": data_type, "tile_list": process_state_tiles(state_row, multi_polygon, config, data_type, 'UTM32')}
-
-        multi_polygon_utm33 = transform(transform_to_utm33, multi_polygon)
-        for _, state_row in state_geo_utm33.iterrows():
-            state_name = state_row['GEN']
-            if not selected_states or state_name in selected_states:
-                state_tiles["tiles"][state_name] = {"data_type": data_type, "tile_list": process_state_tiles(state_row, multi_polygon_utm33, config, data_type, 'UTM33', transform_func=transform_to_utm32)}
-
-        plot_polygons_and_tiles(multi_polygon, state_tiles["tiles"], state_geo_utm32, state_geo_utm33, meta_path, show=show)
-    save_json(meta_path, state_tiles)
-    display_results(meta_path)
-
-def plot_polygons_and_tiles(multi_polygon, state_tiles, state_geo, state_geo_of_utm33, meta_path, show):
-    """
-    Plot the polygon, tiles, and state boundaries.
-
-    Parameters:
-    - multi_polygon (MultiPolygon or None): The multipolygon representing the area of interest.
-    - state_tiles (dict): Dictionary of state tiles.
-    - state_geo (GeoDataFrame): GeoDataFrame containing the state boundaries in UTM32 projection.
-    - state_geo_of_utm33 (GeoDataFrame): GeoDataFrame containing the state boundaries in UTM33 projection.
-    - meta_path (str): Path to save the plot.
-    - show (bool): Whether to display the plot.
-    """
-    print(f"{'-' * 42}\ngenerating plot...", end="", flush=True)
-
-    if multi_polygon and not multi_polygon.is_empty:
-        minx, miny, maxx, maxy = multi_polygon.bounds
-    else:
-        all_coords = [coord for tiles in state_tiles.values() for tile in tiles["tile_list"] for coord in tile["tile_coords"]]
-        minx, miny = np.min(all_coords, axis=0)
-        maxx, maxy = np.max(all_coords, axis=0)
-
-    x_ext, y_ext = maxx - minx, maxy - miny
-
-    dpi, lw_st, lw_p, lw_t = calculate_dpi_and_lw(x_ext, y_ext)
-    fig, ax = plt.subplots(figsize=(20, 20))
-    colors = [mpl.colormaps['jet'](i / len(state_tiles)) for i in range(len(state_tiles))]
-
-    tile_patches = [
-        MplPolygon(tile["tile_coords"], closed=True, edgecolor=tuple(list(color[:3]) + [1]), facecolor=tuple(list(color[:3]) + [0.2]), linestyle='-', linewidth=lw_t)
-        for color, tiles in zip(colors, state_tiles.values())
-        for tile in tiles["tile_list"]
-    ]
-    ax.add_collection(PatchCollection(tile_patches, match_original=True))
-
-    if multi_polygon and not multi_polygon.is_empty:
-        polygon_patches = [
-            MplPolygon(list(polygon.exterior.coords), closed=True, edgecolor='black', facecolor='none', linewidth=lw_p)
-            for polygon in multi_polygon.geoms
-        ]
-        polygon_patches.extend([
-            MplPolygon(list(interior.coords), closed=True, edgecolor='black', facecolor='none', linewidth=lw_p)
-            for polygon in multi_polygon.geoms for interior in polygon.interiors
-        ])
-        ax.add_collection(PatchCollection(polygon_patches, match_original=True))
-
-    transform_to_utm32 = Transformer.from_crs("EPSG:25833", "EPSG:25832", always_xy=True).transform
-    state_patches = []
-    for state_row in state_geo.itertuples():
-        state_polygon = state_row.geometry
-        if state_polygon.geom_type == 'Polygon':
-            state_patches.append(MplPolygon(list(state_polygon.exterior.coords), closed=True, edgecolor='k', facecolor='none', linestyle='-', linewidth=lw_st, alpha=1))
-            state_patches.extend([MplPolygon(list(interior.coords), closed=True, edgecolor='k', facecolor='none', linestyle='-', linewidth=lw_st, alpha=1) for interior in state_polygon.interiors])
-        elif state_polygon.geom_type == 'MultiPolygon':
-            for sub_polygon in state_polygon.geoms:
-                state_patches.append(MplPolygon(list(sub_polygon.exterior.coords), closed=True, edgecolor='k', facecolor='none', linestyle='-', linewidth=lw_st, alpha=1))
-                state_patches.extend([MplPolygon(list(interior.coords), closed=True, edgecolor='k', facecolor='none', linestyle='-', linewidth=lw_st, alpha=1) for interior in sub_polygon.interiors])
-    for state_row in state_geo_of_utm33.itertuples():
-        state_polygon = transform(transform_to_utm32, state_row.geometry)
-        if state_polygon.geom_type == 'Polygon':
-            state_patches.append(MplPolygon(list(state_polygon.exterior.coords), closed=True, edgecolor='k', facecolor='none', linestyle='-', linewidth=lw_st, alpha=1))
-            state_patches.extend([MplPolygon(list(interior.coords), closed=True, edgecolor='k', facecolor='none', linestyle='-', linewidth=lw_st, alpha=1) for interior in state_polygon.interiors])
-        elif state_polygon.geom_type == 'MultiPolygon':
-            for sub_polygon in state_polygon.geoms:
-                state_patches.append(MplPolygon(list(sub_polygon.exterior.coords), closed=True, edgecolor='k', facecolor='none', linestyle='-', linewidth=lw_st, alpha=1))
-                state_patches.extend([MplPolygon(list(interior.coords), closed=True, edgecolor='k', facecolor='none', linestyle='-', linewidth=lw_st, alpha=1) for interior in sub_polygon.interiors])
-    ax.add_collection(PatchCollection(state_patches, match_original=True))
-
-    edge_space_x, edge_space_y = max(x_ext * 0.2, 2500), max(y_ext * 0.2, 2500)
-    ax.set_xlim(minx - edge_space_x, maxx + edge_space_x)
-    ax.set_ylim(miny - edge_space_y, maxy + edge_space_y)
-    ax.set_aspect('equal')
-    ax.set_xticks([])
-    ax.set_yticks([])
-
-    plot_path = os.path.join(os.path.dirname(meta_path), 'tile_overview.png')
-    plt.savefig(plot_path, dpi=dpi, bbox_inches='tight')
-    if show:
-        plt.show()
-    print("\rPlot generation complete.", flush=True)
-    time.sleep(1)
-
-
 def display_results(file_path):
     """
-    Display the results of the tile creation process.
+    Displays the results of tile processing from a JSON file.
 
-    Parameters:
-    - file_path (str): Path to the JSON file containing the results.
+    Args:
+        file_path (str): The path to the JSON file containing the results.
     """
     full_data = load_json(file_path)
     data = full_data["tiles"]
@@ -316,7 +164,7 @@ def display_results(file_path):
         print("\nNo tiles found for any state.\n")
         return
 
-    print(f"\n\n{10 * '-'} RESULTS {10 * '-'}\n\n Tile counts per state ({list(data.values())[0]['data_type']})")
+    print(f"\n\n{'-' * 10} RESULTS {'-' * 10}\n\n Tile counts per state ({list(data.values())[0]['data_type']})")
     print("-" * 29)
     for state, state_data in data.items():
         tile_count = len(state_data["tile_list"])
@@ -325,58 +173,24 @@ def display_results(file_path):
     print("-" * 29)
     print(f"Total number of tiles: {total_tiles}\n")
 
-def calculate_dpi_and_lw(x_ext, y_ext):
-    """
-    Calculate DPI and line widths based on the extent of the area.
-
-    Parameters:
-    - x_ext (float): Extent in the x-direction.
-    - y_ext (float): Extent in the y-direction.
-
-    Returns:
-    - tuple: Rounded DPI value, line width for borders, line width for polygons, line width for tiles.
-    """
-    avg_ext = (x_ext + y_ext) / 2.0
-    min_dpi, max_dpi = 500, 2000
-    max_extent = 250000
-    normalized_ext = min(avg_ext / max_extent, 1)
-    dpi = min_dpi + (max_dpi - min_dpi) * normalized_ext
-    dpi_rounded = round(dpi / 100) * 100
-
-    reference_extent = 40000
-    base_linewidth = 0.08
-    linewidth_border = base_linewidth * (reference_extent / avg_ext)
-    linewidth_polygon = linewidth_border * 2
-    linewidth_tile = linewidth_border * 2.5
-
-    linewidth_border = max(round(linewidth_border / 0.005) * 0.005, 0.015)
-    linewidth_polygon = max(round(linewidth_polygon / 0.005) * 0.005, 0.01)
-    linewidth_tile = max(round(linewidth_tile / 0.005) * 0.005, 0.01)
-    
-    return dpi_rounded, linewidth_border, linewidth_polygon, linewidth_tile
-
 def create_json_from_csv(aoi_path, config, init):
     """
-    Create tile data JSON from CSV input.
+    Creates a JSON file with tile data from a CSV input.
 
-    Parameters:
-    - aoi_path (str): Path to the CSV file.
-    - config (dict): Configuration dictionary containing tile information.
-    - init (dict): Initialization dictionary containing paths and settings.
+    Args:
+        aoi_path (str): The path to the CSV file containing the area of interest.
+        config (dict): The configuration dictionary.
+        init (dict): The initialization dictionary.
 
     Returns:
-    - dict: JSON data created from the CSV input.
+        dict: A dictionary containing the tile data.
     """
-    print("Loading CSV file", end="")
     csv = pd.read_csv(aoi_path)
-    csv_name = os.path.basename(aoi_path)
-
     if len(init["selected_states"]) != 1:
         raise ValueError(f"'selected_states' must be a single state to be read from a CSV file.")
     
     state_name = init["selected_states"][0]
     data_type = init["data_type"]
-    print(f"\rCSV file: {csv_name}\n{'-' * 42}")
 
     transformer = Transformer.from_crs("EPSG:25833", "EPSG:25832", always_xy=True).transform
     
@@ -405,17 +219,23 @@ def create_json_from_csv(aoi_path, config, init):
         "tiles": {state_name: {"data_type": init["data_type"], "tile_list": tiles}}
     }
 
-def convert_and_save_geojson(meta_path, input_json):
-    # Define the source and destination CRS
+def convert_and_save_geojson(meta_path, input_json, target_crs="EPSG:25832"):
+    """
+    Converts and saves GeoJSON with CRS conversion support.
+
+    Args:
+        meta_path (str): The path to the metadata file.
+        input_json (dict): The input JSON data.
+        target_crs (str, optional): The target coordinate reference system. Defaults to "EPSG:25832".
+    """
     crs_src = CRS.from_epsg(25832)
-    crs_dst = CRS.from_epsg(25832)
+    crs_dst = CRS.from_epsg(target_crs.split(":")[1])
     transformer = Transformer.from_crs(crs_src, crs_dst, always_xy=True)
 
     features = []
 
     for region, region_data in input_json["tiles"].items():
         for tile in region_data["tile_list"]:
-            # Transform coordinates if needed (in this case it's the same CRS)
             coords = [tuple(transformer.transform(x, y)) for x, y in tile["tile_coords"]]
             coords.append(coords[0])  # Close the polygon
 
@@ -426,33 +246,260 @@ def convert_and_save_geojson(meta_path, input_json):
                     "tile_name": tile["tile_name"],
                     "state": region,
                     "timestamp": tile["timestamp"],
-                    "location": tile["location"],
-                    "format": tile["format"]
+                    "format": tile["format"],
+                    "location": tile["location"]
                 }
             )
             features.append(feature)
     
-    # Create the final GeoJSON
     geojson = {
         "type": "FeatureCollection",
         "name": input_json["aoi_name"],
         "crs": {
             "type": "name",
             "properties": {
-                "name": "urn:ogc:def:crs:EPSG::25832"
+                "name": f"urn:ogc:def:crs:EPSG::{target_crs.split(':')[1]}"
             }
         },
         "features": features
     }
 
-    # Modify the meta_path to have .geojson extension
     geojson_path = os.path.splitext(meta_path)[0] + ".geojson"
-
-    # Save the GeoJSON to the specified path
     save_json(geojson_path, geojson)
 
+def create_folium_map(meta_path, aoi_path):
+    """
+    Creates a Folium map with the tile data.
 
+    Args:
+        meta_path (str): The path to the metadata file.
+        aoi_path (str): The path to the area of interest file.
+    """
+    with open(meta_path.replace("json", "geojson")) as f:
+        data = json.load(f)
+    
+    with open(aoi_path) as f:
+        aoi_data = json.load(f)
+
+    # Extract unique states from the data
+    states = list(set(feature['properties']['state'] for feature in data['features']))
+
+    # Generate colors for each state using a colormap
+    colors = [plt.cm.gist_rainbow(i / len(states)) for i in range(len(states))]
+    color_map = {state: f'#{int(color[0]*255):02x}{int(color[1]*255):02x}{int(color[2]*255):02x}' for state, color in zip(states, colors)}
+
+    transformer = Transformer.from_crs("EPSG:25832", "EPSG:4326", always_xy=True)
+
+    def transform_coordinates(coordinates):
+        return [transformer.transform(x, y) for x, y in coordinates]
+
+    def transform_polygon(polygon):
+        return [transform_coordinates(ring) for ring in polygon]
+
+    def style_function(feature):
+        state = feature['properties']['state']
+        return {
+            'fillColor': color_map.get(state, 'black'),
+            'color': color_map.get(state, 'black'),
+            'weight': 1.5,
+            'fillOpacity': 0.4,
+        }
+
+    def aoi_style_function(feature):
+        return {
+            'fillColor': 'none',
+            'color': 'black',
+            'weight': 1,
+            'fillOpacity': 0.6,
+        }
+
+    for feature in data['features']:
+        if feature['geometry']['type'] == 'Polygon':
+            feature['geometry']['coordinates'] = transform_polygon(feature['geometry']['coordinates'])
+        elif feature['geometry']['type'] == 'MultiPolygon':
+            feature['geometry']['coordinates'] = [transform_polygon(polygon) for polygon in feature['geometry']['coordinates']]
+
+    for feature in aoi_data['features']:
+        if feature['geometry']['type'] == 'Polygon':
+            feature['geometry']['coordinates'] = transform_polygon(feature['geometry']['coordinates'])
+        elif feature['geometry']['type'] == 'MultiPolygon':
+            feature['geometry']['coordinates'] = [transform_polygon(polygon) for polygon in feature['geometry']['coordinates']]
+
+    def calculate_bounding_box(aoi_data):
+        min_lon, min_lat = float('inf'), float('inf')
+        max_lon, max_lat = float('-inf'), float('-inf')
+        
+        for feature in aoi_data['features']:
+            if feature['geometry']['type'] == 'Polygon':
+                for ring in feature['geometry']['coordinates']:
+                    for lon, lat in ring:
+                        min_lon, min_lat = min(min_lon, lon), min(min_lat, lat)
+                        max_lon, max_lat = max(max_lon, lon), max(max_lat, lat)
+            elif feature['geometry']['type'] == 'MultiPolygon':
+                for polygon in feature['geometry']['coordinates']:
+                    for ring in polygon:
+                        for lon, lat in ring:
+                            min_lon, min_lat = min(min_lon, lon), min(min_lat, lat)
+                            max_lon, max_lat = max(max_lon, lon), max(max_lat, lat)
+        
+        return [[min_lat, min_lon], [max_lat, max_lon]]
+
+    aoi_bounds = calculate_bounding_box(aoi_data)
+
+    m = folium.Map(tiles='CartoDB Positron No Labels')
+    m.fit_bounds(aoi_bounds)
+
+    def create_popup(properties):
+        state = properties.get('state', 'N/A')
+        tile_name = properties.get('tile_name', 'N/A')
+        timestamp = properties.get('timestamp', 'N/A')
+        fmt = properties.get('format', 'N/A')
+        popup_content = f"""
+        <table style="width:160px">
+            <tr>
+                <td style="text-align:left"><b>State:</b></td>
+                <td style="text-align:right">{state}</td>
+            </tr>
+            <tr>
+                <td style="text-align:left"><b>Name:</b></td>
+                <td style="text-align:right">{tile_name}</td>
+            </tr>
+            <tr>
+                <td style="text-align:left"><b>Timestamp:</b></td>
+                <td style="text-align:right">{timestamp}</td>
+            </tr>
+            <tr>
+                <td style="text-align:left"><b>Format:</b></td>
+                <td style="text-align:right">{fmt}</td>
+            </tr>
+        </table>
+        """
+        return folium.Popup(popup_content, max_width=250)
+
+    geojson_fg = folium.FeatureGroup(name='geojson')
+
+    for feature in data['features']:
+        coords = feature['geometry']['coordinates']
+        if feature['geometry']['type'] == 'Polygon':
+            folium.GeoJson(
+                feature,
+                style_function=style_function,
+                name='geojson',
+                smooth_factor=0,
+                zoom_on_click=False,
+                highlight_function=lambda x: {'weight': 5, 'color': 'yellow'},
+                popup=create_popup(feature['properties'])
+            ).add_to(geojson_fg)
+        elif feature['geometry']['type'] == 'MultiPolygon':
+            for polygon in coords:
+                folium.GeoJson(
+                    {'type': 'Feature', 'geometry': {'type': 'Polygon', 'coordinates': polygon}, 'properties': feature['properties']},
+                    style_function=style_function,
+                    name='geojson',
+                    smooth_factor=0,
+                    zoom_on_click=False,
+                    highlight_function=lambda x: {'weight': 5, 'color': 'yellow'},
+                    popup=create_popup(feature['properties'])
+                ).add_to(geojson_fg)
+
+    geojson_fg.add_to(m)
+
+    folium.GeoJson(
+        aoi_data,
+        style_function=aoi_style_function,
+        name='aoi',
+        smooth_factor=-1,
+    ).add_to(m)
+
+    folium.LayerControl().add_to(m)
+
+    legend_html = '''
+         <div style="
+         position: fixed; 
+         bottom: 50px; left: 50px; width: 75px; height: auto; 
+         background-color: white; z-index:9999; font-size:14px;
+         padding: 10px;
+         border: 2px solid grey;
+         border-radius: 5px;
+         ">
+         <b>States</b><br>
+    '''
+    for state, color in color_map.items():
+        legend_html += f'''
+        <i style="background: {color}; width: 10px; height: 10px; display: inline-block; opacity: 0.5;"></i>
+        {state}<br>
+        '''
+    legend_html += '</div>'
+
+    # Step 3: Add the Legend to the Map
+    legend = folium.Element(legend_html)
+    m.get_root().html.add_child(legend)
+
+    html_path = os.path.splitext(meta_path)[0] + '_map.html'
+    m.save(html_path)
+
+def create_state_tile_file(init, config):
+    """
+    Creates state tile files from the provided initialization and configuration data.
+
+    Args:
+        init (dict): The initialization dictionary containing paths and other settings.
+        config (dict): The configuration dictionary containing tile and state information.
+    """
+    aoi_path = init['aoi_path']
+    data_type = init['data_type']
+    meta_path = init['meta_path']
+    selected_states = init['selected_states']
+    os.makedirs(os.path.dirname(meta_path), exist_ok=True)
+
+    print(f"\n===== Generating {data_type} Tiles by State =====\n\nAOI file: {os.path.basename(aoi_path)}\n{'-' * 42}")
+
+    if os.path.exists(meta_path):
+        full_data = load_json(meta_path)
+        if full_data["aoi_name"] == os.path.basename(aoi_path) and full_data["data_type"] == data_type:
+            print(f"Tile data file for '{full_data['aoi_name']}' ({data_type}) already exists.\nProceeding with the existing file.")
+            display_results(meta_path)
+            return
+    else:
+        os.makedirs(os.path.dirname(meta_path), exist_ok=True)
+
+    selected_states = selected_states or []
+    state_files_dir = 'bdl'
+    state_geo_25832 = gpd.read_file(os.path.join(state_files_dir, 'DE_bdl_utm32.geojson'))
+    state_geo_25833 = gpd.read_file(os.path.join(state_files_dir, 'DE_bdl_utm33.geojson'))
+    
+    state_tiles = {"aoi_name": os.path.basename(aoi_path), "data_type": data_type, "tiles": {}}
+    transform_25832_to_25833 = Transformer.from_crs(state_geo_25832.crs, state_geo_25833.crs, always_xy=True).transform
+    transform_25833_to_25832 = Transformer.from_crs(state_geo_25833.crs, state_geo_25832.crs, always_xy=True).transform
+
+    if aoi_path.endswith(".csv"):
+        state_tiles = create_json_from_csv(aoi_path, config, init)
+    else:
+        aoi_multi_polygon = get_multipolygon_from_geojson(aoi_path)
+        for _, state_row in state_geo_25832.iterrows():
+            state_name = state_row['GEN']
+            if not selected_states or state_name in selected_states:
+                state_tiles["tiles"][state_name] = {"data_type": data_type, "tile_list": process_state_tiles(state_row, aoi_multi_polygon, config, data_type, state_geo_25832.crs)}
+
+        aoi_multi_polygon_25833 = transform(transform_25832_to_25833, aoi_multi_polygon)
+        for _, state_row in state_geo_25833.iterrows():
+            state_name = state_row['GEN']
+            if not selected_states or state_name in selected_states:
+                state_tiles["tiles"][state_name] = {"data_type": data_type, "tile_list": process_state_tiles(state_row, aoi_multi_polygon_25833, config, data_type, state_geo_25833.crs, transform_func=transform_25833_to_25832)}
+
+    save_json(meta_path, state_tiles)
+    convert_and_save_geojson(meta_path, state_tiles)
+    create_folium_map(meta_path, aoi_path)
+    display_results(meta_path)
+
+# Main entry point
 if __name__ == "__main__":
     config = load_json('config.json')
     init = load_json('init.json')
-    create_state_tile_file(init, config, show=False)
+
+    create_state_tile_file(init, config)
+
+    tiles_data = load_json(init['meta_path'])
+    convert_and_save_geojson(init['meta_path'], tiles_data)
+
+    create_folium_map(init['meta_path'], init['aoi_path'])

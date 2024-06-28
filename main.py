@@ -1,7 +1,7 @@
 import os
 import sys
 
-from state_tile_creator import load_json, save_json, create_state_tile_file, convert_and_save_geojson
+import state_tile_creator as stc
 
 
 def call_download_script(state, tiles_data, config):
@@ -22,14 +22,16 @@ def main(init_path):
     sys.path.append(os.path.join(os.path.dirname(__file__), 'download_scripts'))
 
     # Load the JSON files
-    init = load_json(init_path)
-    config = load_json('config.json')
+    init = stc.load_json(init_path)
+    config = stc.load_json('config.json')
 
-    config_data = (init, config)
+    # Get file paths
+    meta_path = init['meta_path']
+    aoi_path = init['aoi_path']
 
-    create_state_tile_file(init, config, show=False)
+    stc.create_state_tile_file(init, config)
 
-    tiles_data = load_json(init['meta_path'])
+    tiles_data = stc.load_json(meta_path)
 
     print("INITIALIZING DOWNLOAD PROCESS")
     
@@ -37,14 +39,13 @@ def main(init_path):
     for state, state_data in tiles_data["tiles"].items():
         if state_data["tile_list"]:
             print(f"\nCalling {state.lower()}_download.py for state {state} with {len(state_data['tile_list'])} tiles.")
-            call_download_script(state, tiles_data, config_data)
+            call_download_script(state, tiles_data, (init, config))
             
-    save_json(init['meta_path'], tiles_data)
-    convert_and_save_geojson(init['meta_path'], tiles_data)
+    stc.save_json(meta_path, tiles_data)
+    stc.convert_and_save_geojson(meta_path, tiles_data)
+    stc.create_folium_map(meta_path, aoi_path)
     print("\nDownload process completed.")
 
 if __name__ == "__main__":
-
     init_path = sys.argv[1] if len(sys.argv) > 1 else 'init.json'
-
     main(init_path)
