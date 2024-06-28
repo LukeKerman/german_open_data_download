@@ -11,7 +11,7 @@ The project contains several key components:
 - `state_tile_creator.py`: A script that generates the tiles for specific states.
 - `config.json`: A configuration file specifying the download links, metadata links, and S3 paths for different states and data types.
 - `init.json`: A JSON file containing initialization parameters such as area of interest (AOI) path, data type, and other settings.
-- `mv_download.py` and `bw_download.py`: Example scripts for downloading data specific to Mecklenburg-Vorpommern (MV) and Baden-Württemberg (BW) respectively.
+- `download_scripts/{state}_download.py`: Handle the download procedure of each data source.
 
 ## Configuration Files
 
@@ -90,13 +90,15 @@ The main script responsible for orchestrating the download and processing of geo
 ## state_tile_creator.py
 This script generates the necessary tiles for specific states based on the configurations provided in `config.json`.
 
-# Example Download Scripts
+# Download Scripts
 
-## mv_download.py
-A script for downloading data specific to Mecklenburg-Vorpommern (MV).
+The download scripts are named following the convention `{state_abbreviation}_download.py` and are responsible for the individual download of data files and metadata files specific to each state. These scripts ensure that the appropriate datasets are fetched and organized correctly, based on the configurations provided.
 
-## bw_download.py
-A script for downloading data specific to Baden-Württemberg (BW).
+For example:
+- `mv_download.py`: A script for downloading data specific to Mecklenburg-Vorpommern (MV).
+- `bw_download.py`: A script for downloading data specific to Baden-Württemberg (BW).
+
+Each script handles the unique requirements and endpoints associated with the state's data, making it easier to manage and update the datasets as needed. These scripts leverage the configurations defined in `config.json` to ensure consistency and accuracy in the downloaded data.
 
 # Usage
 
