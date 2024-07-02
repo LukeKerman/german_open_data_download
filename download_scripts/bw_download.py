@@ -1,7 +1,6 @@
 import os
-import json
+
 import requests
-# owslib.wfs import WebFeatureService
 
 from _downloader import DownloadTools
 

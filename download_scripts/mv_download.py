@@ -1,8 +1,7 @@
 import os
-import json
-import requests
-import time
 import csv
+
+import requests
 
 from _downloader import DownloadTools
 
@@ -57,6 +56,8 @@ def get_id_and_creation_date(meta_url, tiles, data_type):
             writer.writerow(['tile_nr', 'id'])
             for row in tile_ids:
                 writer.writerow(row)
+    
+    print("\rUpdated metadata successfully")
 
 def download_tiles(tiles_data, config_data):
     state = os.path.basename(__file__)[:2].upper()

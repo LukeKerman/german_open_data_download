@@ -1,10 +1,9 @@
 import os
-import pandas as pd
-import requests
 import json
-from zipfile import ZipFile
 import re
 from datetime import datetime
+
+import requests
 
 from _downloader import DownloadTools
 

@@ -1,7 +1,8 @@
 import os
-import requests
 import csv
 import time
+
+import requests
 
 from _downloader import DownloadTools
 

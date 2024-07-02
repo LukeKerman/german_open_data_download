@@ -1,6 +1,7 @@
 import os
-import requests
 import csv
+
+import requests
 
 from _downloader import DownloadTools
 

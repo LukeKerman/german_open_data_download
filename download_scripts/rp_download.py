@@ -1,5 +1,5 @@
 import os
-import pandas as pd
+
 import requests
 
 from _downloader import DownloadTools
