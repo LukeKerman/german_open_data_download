@@ -1,5 +1,5 @@
 {
-    "aoi_path": "/Users/lukas/Documents/GitHub/german_open_data_download/bdl/test/test_AOI_X1.geojson",
+    "aoi_path": "./bdl/test/test_AOI_X1.geojson",
     "data_type": "DTM",
     "selected_states": null,
     "meta_path": "meta/tile_data.json",
