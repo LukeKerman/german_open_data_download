@@ -19,12 +19,12 @@ The project contains several key components:
 
 This file contains initialization parameters used by the main script. Key parameters include:
 
-- `aoi_path`: Path to the Area of Interest (AOI) file in GeoJSON format.
+- `aoi_path`: Path to the Area of Interest (AOI) file in GeoJSON format or CSV file for a single state.
 - `data_type`: Type of data to download (e.g., DTM, DSM, DOP).
-- `selected_states`: States selected for processing (null implies all states).
+- `selected_states`: States selected for processing (null implies all states). If CSV file is used as AOI, corresponding state must be specified.
 - `meta_path`: Path to the metadata file.
 - `local_landing_path`: Local directory for storing downloaded files.
-- `date_range`: Optional date range for filtering data.
+- `date_range`: Optional date range for filtering data. (Date format: Y%-m%-d%)
 - `upload_s3`: Boolean indicating whether to upload processed data to S3.
 - `delete`: Boolean indicating whether to delete local files after processing.
 
