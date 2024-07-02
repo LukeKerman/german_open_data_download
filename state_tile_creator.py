@@ -376,40 +376,40 @@ def create_folium_map(meta_path, aoi_path):
         """
         return folium.Popup(popup_content, max_width=250)
 
-    geojson_fg = folium.FeatureGroup(name='geojson')
+    for state in states:
+        state_fg = folium.FeatureGroup(name=state)
+        for feature in data['features']:
+            if feature['properties']['state'] == state:
+                coords = feature['geometry']['coordinates']
+                if feature['geometry']['type'] == 'Polygon':
+                    folium.GeoJson(
+                        feature,
+                        style_function=style_function,
+                        smooth_factor=0,
+                        zoom_on_click=False,
+                        highlight_function=lambda x: {'weight': 5, 'color': 'yellow'},
+                        popup=create_popup(feature['properties'])
+                    ).add_to(state_fg)
+                elif feature['geometry']['type'] == 'MultiPolygon':
+                    for polygon in coords:
+                        folium.GeoJson(
+                            {'type': 'Feature', 'geometry': {'type': 'Polygon', 'coordinates': polygon}, 'properties': feature['properties']},
+                            style_function=style_function,
+                            smooth_factor=0,
+                            zoom_on_click=False,
+                            highlight_function=lambda x: {'weight': 5, 'color': 'yellow'},
+                            popup=create_popup(feature['properties'])
+                        ).add_to(state_fg)
+        state_fg.add_to(m)
 
-    for feature in data['features']:
-        coords = feature['geometry']['coordinates']
-        if feature['geometry']['type'] == 'Polygon':
-            folium.GeoJson(
-                feature,
-                style_function=style_function,
-                name='geojson',
-                smooth_factor=0,
-                zoom_on_click=False,
-                highlight_function=lambda x: {'weight': 5, 'color': 'yellow'},
-                popup=create_popup(feature['properties'])
-            ).add_to(geojson_fg)
-        elif feature['geometry']['type'] == 'MultiPolygon':
-            for polygon in coords:
-                folium.GeoJson(
-                    {'type': 'Feature', 'geometry': {'type': 'Polygon', 'coordinates': polygon}, 'properties': feature['properties']},
-                    style_function=style_function,
-                    name='geojson',
-                    smooth_factor=0,
-                    zoom_on_click=False,
-                    highlight_function=lambda x: {'weight': 5, 'color': 'yellow'},
-                    popup=create_popup(feature['properties'])
-                ).add_to(geojson_fg)
-
-    geojson_fg.add_to(m)
-
+    aoi_fg = folium.FeatureGroup(name="AOI")
     folium.GeoJson(
         aoi_data,
         style_function=aoi_style_function,
         name='aoi',
         smooth_factor=-1,
-    ).add_to(m)
+    ).add_to(aoi_fg)
+    aoi_fg.add_to(m)
 
     folium.LayerControl().add_to(m)
 
