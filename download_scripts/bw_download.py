@@ -5,19 +5,27 @@ import requests
 from _downloader import DownloadTools
 
 def get_creation_date(wfs_url, tiles, data_type):
-    if data_type == "DTM":
+    '''if data_type == "DTM":
         print("No creation date for DTM available")
-        return
+        return'''
     
     print("Fetching meta data", end="", flush=True)
     
-    # Specify the layer name directly
-    layer_name = 'verm:v_dop_20_bildflugkacheln'
+    if data_type == "DTM":
+        layer_name = 'verm:v_dgm_kacheln_als_2_2016_2021'
+        kachel_col = 'dgm_kachel'
+        creation_date_col = 'fortfuehrungsdatum'
+        version = '2.0.0'
+    elif data_type in ("iDSM", "DOP"):
+        layer_name = 'verm:v_dop_20_bildflugkacheln'
+        kachel_col = 'dop_kachel'
+        creation_date_col = 'befliegungsdatum'
+        version = '1.1.0'
 
     # Construct the GetFeature request URL
     params = {
         'service': 'WFS',
-        'version': '1.1.0',
+        'version': version,
         'request': 'GetFeature',
         'typeName': layer_name,
         'outputFormat': 'json'
@@ -35,8 +43,8 @@ def get_creation_date(wfs_url, tiles, data_type):
     # Create a dictionary to map tile names to Befliegungsdatum
     tile_dict = {}
     for feature in data.get('features', []):
-        dop_kachel = feature['properties'].get('dop_kachel')
-        creationdate = feature['properties'].get('befliegungsdatum')
+        dop_kachel = feature['properties'].get(kachel_col)
+        creationdate = feature['properties'].get(creation_date_col)
         if dop_kachel and creationdate:
             tile_dict[dop_kachel] = creationdate
 
@@ -47,6 +55,7 @@ def get_creation_date(wfs_url, tiles, data_type):
         if wfs_tile_name in tile_dict:
             tile['timestamp'] = tile_dict[wfs_tile_name]
 
+    print("\rFetching meta data complete.")
 
 def download_tiles(tiles_data, config_data):
     state = os.path.basename(__file__)[:2].upper()
@@ -71,13 +80,15 @@ def download_tiles(tiles_data, config_data):
     meta_data_url = config_info['links']['meta_data_link']
     get_creation_date(meta_data_url, tiles, data_type)
 
+
+
     for i, tile in enumerate(tiles, start=1):
         tile_name = tile['tile_name']
         download_url = config_info['links']['download_link'].format(tile_name)
 
         filename = f"{data_type.lower()}_{tile_name}.{download_url.split('.')[-1]}"
-        save_path = f"{landing}/{state.lower()}/{filename}"
-        os.makedirs(f"{landing}/{state.lower()}", exist_ok=True)
+        save_path = f"{landing}/{state.lower()}/{data_type.lower()}_{tile_name}/{filename}"
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
         # Check if timestamp is within date range
         if DT.within_date_range(tile["timestamp"], init["date_range"]):
@@ -95,10 +106,11 @@ def download_tiles(tiles_data, config_data):
                 print(f"Error while downloading to {tile_name}: {e}")
                 DT.delete_files_and_dir(save_path)
 
-            file_path_list = DT.find_file(save_path)
+            file_path_list = DT.find_file(os.path.dirname(save_path))
 
             # Update the tile format
             tile['format'] = file_path_list[0].split('.')[-1]
+            tile['location'] = []
 
             if init['upload_s3']:
                 # Upload the file to S3
@@ -108,13 +120,13 @@ def download_tiles(tiles_data, config_data):
                     s3_path = f"{config_info['links']['s3_path']}{sub_folder}/{file_name}"
                     try:
                         DT.upload_file(save_path, s3_path)
-                        tile['location'] = s3_path
+                        tile['location'].append(s3_path)
                         if init['delete']:
                             DT.delete_files_and_dir(os.path.dirname(save_path))
                     except Exception as e:
                         print(f"Error while uploading to {s3_path}: {e}")
             else:
-                tile['location'] = save_path.split('.')[0]
+                tile['location'] = os.path.dirname(save_path)
 
             DT.save_json(meta_path, tiles_data)
         else:
