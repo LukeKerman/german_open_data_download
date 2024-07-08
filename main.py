@@ -36,15 +36,22 @@ def main(init_path):
     print("INITIALIZING DOWNLOAD PROCESS")
     
     # Iterate through each state in the tiles data
-    for state, state_data in tiles_data["tiles"].items():
-        if state_data["tile_list"]:
-            print(f"\nCalling {state.lower()}_download.py for state {state} with {len(state_data['tile_list'])} tiles.")
-            call_download_script(state, tiles_data, (init, config))
-            
-    stc.save_json(meta_path, tiles_data)
-    stc.convert_and_save_geojson(meta_path, tiles_data)
-    stc.create_folium_map(meta_path, aoi_path)
-    print("\nDownload process completed.")
+    
+    try:
+        for state, state_data in tiles_data["tiles"].items():
+            if state_data["tile_list"]:
+                print(f"\nCalling {state.lower()}_download.py for state {state} with {len(state_data['tile_list'])} tiles.")
+                call_download_script(state, tiles_data, (init, config))
+                stc.save_json(meta_path, tiles_data)
+        stc.convert_and_save_geojson(meta_path, tiles_data)
+        stc.create_folium_map(meta_path, aoi_path)
+        print("\nDownload process completed.")
+    except KeyboardInterrupt:
+        print("\nDownload process manually interupted.")
+        stc.save_json(meta_path, tiles_data)
+    except Exception as e:
+        print(f"\nError while downloading: {e}")
+        stc.save_json(meta_path, tiles_data)
 
 if __name__ == "__main__":
     init_path = sys.argv[1] if len(sys.argv) > 1 else 'init.json'

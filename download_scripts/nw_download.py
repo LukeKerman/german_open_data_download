@@ -110,8 +110,7 @@ def download_tiles(tiles_data, config_data):
                 tile['location'] = os.path.dirname(save_path)
             # Update the tile format
             tile['format'] = save_path.split('.')[-1]
-
-            DT.save_json(meta_path, tiles_data)
+            
         else:
             print(f"Tile {tile['tile_name']} is already downloaded [{i} of {total_tiles}]")
     

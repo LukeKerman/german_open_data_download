@@ -161,7 +161,6 @@ def download_tiles(tiles_data, config_data):
             except Exception as e:
                 print(f"Error while downloading to {tile_name}: {e}")
 
-            DT.save_json(meta_path, tiles_data)
         else:
             print(f"Tile {tile['tile_name']} is already downloaded [{i} of {total_tiles}]")
     
