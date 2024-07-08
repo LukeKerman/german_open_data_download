@@ -47,10 +47,10 @@ def main(init_path):
         stc.create_folium_map(meta_path, aoi_path)
         print("\nDownload process completed.")
     except KeyboardInterrupt:
-        print("\nDownload process manually interupted.")
+        print("\nDownload process stopped.")
         stc.save_json(meta_path, tiles_data)
     except Exception as e:
-        print(f"\nError while downloading: {e}")
+        print(f"\nError: {e}")
         stc.save_json(meta_path, tiles_data)
 
 if __name__ == "__main__":
