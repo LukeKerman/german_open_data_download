@@ -58,13 +58,14 @@ def download_tiles(tiles_data, config_data):
     for i, tile in enumerate(tiles, start=1):
         tile_name = tile['tile_name']
         download_url = config_info['links']['download_link'].format(tile_name)
+        meta_data_url = config_info['links']['meta_data_link']
+
+        get_creation_date(meta_data_url, tile, data_type)
+        if not init["download"]: continue
 
         filename = download_url.split('/')[-1]
         save_path = f"{landing}/{state.lower()}/{data_type.lower()}_{tile_name}/{filename}"
         os.makedirs(f"{landing}/{state.lower()}/{data_type.lower()}_{tile_name}", exist_ok=True)
-
-        meta_data_url = config_info['links']['meta_data_link']
-        get_creation_date(meta_data_url, tile, data_type)
 
         # Check if timestamp is within date range
         if DT.within_date_range(tile["timestamp"], init["date_range"]):

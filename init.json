@@ -1,13 +1,14 @@
 {
-    "aoi_path": "./bdl/test/test_AOI_X1.geojson",
+    "aoi_path": "./bdl/DE_NI_utm32.geojson",
     "data_type": "DTM",
-    "selected_states": null,
+    "selected_states": ["NI"],
     "meta_path": "meta/tile_data.json",
     "local_landing_path": "tmp",
     "date_range": {
         "begin": null,
         "end": null
     },
+    "download": true,
     "upload_s3": false,
     "delete": false
   }

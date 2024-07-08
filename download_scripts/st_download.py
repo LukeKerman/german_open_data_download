@@ -115,6 +115,8 @@ def download_tiles(tiles_data, config_data):
     meta_data_url = config_info['links']['meta_data_link']
     get_creation_date(meta_data_url, tiles, data_type)
 
+    if not init["download"]: return
+
     base_url = config_info['links']['download_link']
     prepare_base_url, tile_ids = get_tile_id(base_url)
 

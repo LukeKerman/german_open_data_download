@@ -81,6 +81,7 @@ def download_tiles(tiles_data, config_data):
 
     meta_data_url = config_info['links']['meta_data_link']
     get_id_and_creation_date(meta_data_url, tiles, data_type)
+    if not init["download"]: return
 
     for i, tile in enumerate(tiles, start=1):
         tile_name = tile['tile_name']

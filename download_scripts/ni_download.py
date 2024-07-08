@@ -45,6 +45,8 @@ def download_tiles(tiles_data, config_data):
                             print(f"Error with data type {data_type} is not in the configured or set correctly")
 
                     tile["timestamp"] = feature['properties']['Aktualitaet']
+            
+            if not init["download"]: continue
 
             # Check if timestamp is within date range
             if DT.within_date_range(tile["timestamp"], init["date_range"]):
