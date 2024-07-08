@@ -127,7 +127,7 @@
                 "y": 0
             },
             "links": {
-                "download_link": "https://www.opengeodata.nrw.de/produkte/geobasis/lusat/akt/dop/dop_jp2_f10/dop10rgbi_32_280_5652_1_nw_2021.jp2",
+                "download_link": "https://www.opengeodata.nrw.de/produkte/geobasis/lusat/akt/dop/dop_jp2_f10/dop10rgbi_{}_1_nw_{}.jp2",
                 "meta_data_link": "https://www.opengeodata.nrw.de/produkte/geobasis/lusat/akt/dop/dop_jp2_f10/dop_meta.zip",
                 "s3_path": "s3://nw/dop/"
             }
@@ -333,7 +333,7 @@
                 "y": 0
             },
             "links": {
-                "download_link": "https://www.opengeodata.nrw.de/produkte/geobasis/hm/bdom50_las/bdom50_las/bdom50_32280_5652_1_nw_2023.laz",
+                "download_link": "https://www.opengeodata.nrw.de/produkte/geobasis/hm/bdom50_las/bdom50_las/bdom50_{}_1_nw_{}.laz",
                 "meta_data_link": "https://www.opengeodata.nrw.de/produkte/geobasis/hm/bdom50_las/bdom50_las/bdom50_meta.zip",
                 "s3_path": "s3://nw/idsm/"
             }
@@ -539,7 +539,7 @@
                 "y": 0
             },
             "links": {
-                "download_link": "https://www.opengeodata.nrw.de/produkte/geobasis/hm/dgm1_tiff/dgm1_tiff/dgm1_32_280_5652_1_nw_2022.tif",
+                "download_link": "https://www.opengeodata.nrw.de/produkte/geobasis/hm/dgm1_tiff/dgm1_tiff/dgm1_{}_1_nw_{}.tif",
                 "meta_data_link": "https://www.opengeodata.nrw.de/produkte/geobasis/hm/dgm1_tiff/dgm1_tiff/dgm1_meta.zip",
                 "s3_path": "s3://nw/dtm/"
             }

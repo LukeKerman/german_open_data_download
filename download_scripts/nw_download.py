@@ -71,7 +71,10 @@ def download_tiles(tiles_data, config_data):
 
     for i, tile in enumerate(tiles, start=1):
         tile_name = tile['tile_name']
-        download_url = config_info['links']['download_link'].format(tile_name)
+        if data_type == "iDSM":
+            download_url = config_info['links']['download_link'].format(tile_name.replace('_', '', 1), tile['timestamp'][:4])
+        else:
+            download_url = config_info['links']['download_link'].format(tile_name, tile['timestamp'][:4])
 
         filename = download_url.split('/')[-1]
         save_path = f"{landing}/{state.lower()}/{data_type.lower()}_{tile_name}/{filename}"
