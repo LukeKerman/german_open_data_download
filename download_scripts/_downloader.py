@@ -165,3 +165,66 @@ class DownloadTools:
             return tile_date <= end_date
         else:
             return True
+        
+    def filter_tiles_by_date(self, tiles, date_range):
+
+        def parse_date(date_str):
+            date_formats = ["%Y-%m-%d", "%d-%m-%Y", "%d.%m.%Y"]
+            for fmt in date_formats:
+                try:
+                    return datetime.strptime(date_str, fmt)
+                except ValueError:
+                    continue
+            raise ValueError(f"Date format of '{date_str}' is not supported")
+        
+        def within_date_range(tile_timestamp, date_range):
+            # Return true if no timestamp is provided
+            if not tile_timestamp:
+                return True
+            
+            # Convert tile_timestamp to datetime object
+            tile_date = parse_date(tile_timestamp)
+
+            # Extract and convert begin and end dates from date_range
+            begin_date = date_range.get("begin")
+            end_date = date_range.get("end")
+            
+            if begin_date is not None:
+                begin_date = datetime.strptime(begin_date, "%Y-%m-%d")
+            if end_date is not None:
+                if end_date.startswith("XXXX"):
+                    end_date = begin_date.replace(month=10, day=30)
+                    extend_years = True
+                else:
+                    end_date = datetime.strptime(end_date, "%Y-%m-%d")
+                    extend_years = False
+            else:
+                extend_years = False
+
+            # If both dates are None, return True (no date filtering)
+            if begin_date is None and end_date is None:
+                return True
+
+            # Generate all vegetation periods from begin_date up to tile_date's year
+            periods = []
+            if extend_years:
+                current_year = datetime.now().year
+                for year in range(begin_date.year, current_year + 1):
+                    period_start = begin_date.replace(year=year)
+                    period_end = end_date.replace(year=year)
+                    periods.append((period_start, period_end))
+            else:
+                periods.append((begin_date, end_date))
+
+            # Perform the date range check across all periods
+            for start, end in periods:
+                if start is not None and end is not None and start <= tile_date <= end:
+                    return True
+                elif start is not None and end is None and tile_date >= start:
+                    return True
+                elif start is None and end is not None and tile_date <= end:
+                    return True
+
+            return False
+
+        return [tile for tile in tiles if within_date_range(tile["timestamp"], date_range)]
