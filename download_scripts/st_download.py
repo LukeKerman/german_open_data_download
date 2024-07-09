@@ -110,10 +110,13 @@ def download_tiles(tiles_data, config_data):
 
     DT = DownloadTools()
 
-    total_tiles = len(tiles)
-
     meta_data_url = config_info['links']['meta_data_link']
     get_creation_date(meta_data_url, tiles, data_type)
+    tiles = DT.filter_tiles_by_date(tiles, init["date_range"])
+    state_data["tile_list"] = tiles
+    tiles_data["tiles"][state] = state_data
+
+    total_tiles = len(tiles)
 
     if not init["download"]: return
 
@@ -123,13 +126,6 @@ def download_tiles(tiles_data, config_data):
     for i, tile in enumerate(tiles, start=1):
         tile_name = tile['tile_name']
         id = tile_ids.get(tile_name)
-
-        # Check if timestamp is within date range
-        if DT.within_date_range(tile["timestamp"], init["date_range"]):
-            pass
-        else:
-            print(f"Tile {tile_name} not in date range")
-            continue
 
         # Download the file
         if not tile["location"]:
@@ -150,7 +146,6 @@ def download_tiles(tiles_data, config_data):
             if data_type == "DTM":
                 find_meta_file_and_get_date(os.path.dirname(save_path), tile)
                 
-
             # Update the tile format
             tile['format'] = file_path.split('.')[-1]
 

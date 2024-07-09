@@ -4,39 +4,40 @@ import requests
 
 from _downloader import DownloadTools
 
-def get_creation_date(meta_url, tile, data_type):
+def get_creation_date(meta_url, tiles, data_type):
 
-    tile_name_parts = tile["tile_name"].split('_')
-    if data_type == "DTM":
-        tile_nr = f'{tile_name_parts[1]}_{tile_name_parts[2]}'
-        start_tag = '<gco:DateTime>'
-        end_tag = '</gco:DateTime>'
-    else:
-        tile_nr = tile_name_parts[1] + tile_name_parts[2]
-        start_tag = '<Date>'
-        end_tag = '</Date>'
+    for tile in tiles:
+        tile_name_parts = tile["tile_name"].split('_')
+        if data_type == "DTM":
+            tile_nr = f'{tile_name_parts[1]}_{tile_name_parts[2]}'
+            start_tag = '<gco:DateTime>'
+            end_tag = '</gco:DateTime>'
+        else:
+            tile_nr = tile_name_parts[1] + tile_name_parts[2]
+            start_tag = '<Date>'
+            end_tag = '</Date>'
 
-    # Fetch the XML content from the URL
-    response = requests.get(meta_url.format(tile_nr), verify=False)
-    
-    # Raise an exception if the request was unsuccessful
-    response.raise_for_status()
-    
-    # Convert the response content to a string
-    xml_content = response.text
-    
-    # Find the start and end of the <Date> tag
-    
-    start_index = xml_content.find(start_tag)
-    end_index = xml_content.find(end_tag)
-    
-    if start_index != -1 and end_index != -1:
-        # Extract the date string
-        date_str = xml_content[start_index + len(start_tag):end_index]
-        tile["timestamp"] = date_str[:10]
-    else:
-        tile["timestamp"] = None
-        print("Date element not found in the XML file.")
+        # Fetch the XML content from the URL
+        response = requests.get(meta_url.format(tile_nr), verify=False)
+        
+        # Raise an exception if the request was unsuccessful
+        response.raise_for_status()
+        
+        # Convert the response content to a string
+        xml_content = response.text
+        
+        # Find the start and end of the <Date> tag
+        
+        start_index = xml_content.find(start_tag)
+        end_index = xml_content.find(end_tag)
+        
+        if start_index != -1 and end_index != -1:
+            # Extract the date string
+            date_str = xml_content[start_index + len(start_tag):end_index]
+            tile["timestamp"] = date_str[:10]
+        else:
+            tile["timestamp"] = None
+            print("Date element not found in the XML file.")
 
 
 def download_tiles(tiles_data, config_data):
@@ -53,26 +54,23 @@ def download_tiles(tiles_data, config_data):
 
     DT = DownloadTools()
 
+    meta_data_url = config_info['links']['meta_data_link']
+    get_creation_date(meta_data_url, tiles, data_type)
+    tiles = DT.filter_tiles_by_date(tiles, init["date_range"])
+    state_data["tile_list"] = tiles
+    tiles_data["tiles"][state] = state_data
+
     total_tiles = len(tiles)
+
+    if not init["download"]: return
 
     for i, tile in enumerate(tiles, start=1):
         tile_name = tile['tile_name']
         download_url = config_info['links']['download_link'].format(tile_name)
-        meta_data_url = config_info['links']['meta_data_link']
-
-        get_creation_date(meta_data_url, tile, data_type)
-        if not init["download"]: continue
 
         filename = download_url.split('/')[-1]
         save_path = f"{landing}/{state.lower()}/{data_type.lower()}_{tile_name}/{filename}"
         os.makedirs(f"{landing}/{state.lower()}/{data_type.lower()}_{tile_name}", exist_ok=True)
-
-        # Check if timestamp is within date range
-        if DT.within_date_range(tile["timestamp"], init["date_range"]):
-            pass
-        else:
-            print(f"Tile {tile_name} not in date range")
-            continue
         
         # Download the file
         if not tile["location"]:
@@ -81,8 +79,7 @@ def download_tiles(tiles_data, config_data):
                 print(f" [{i} of {total_tiles}]")
             except Exception as e:
                 print(f"Error while downloading to {tile_name}: {e}")
-                DT.delete_files_and_dir(save_path)
-
+                DT.delete_files_and_dir(os.path.dirname(save_path))
 
             if init['upload_s3']:
                 # Upload the file to S3

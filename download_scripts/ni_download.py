@@ -4,6 +4,14 @@ import requests
 
 from _downloader import DownloadTools
 
+def get_creation_date(result, tiles):
+    print(f"Fetching meta data", end="", flush=True)
+    for i, tile in enumerate(tiles, start=1):
+        for feature in result['features']:
+            if feature['properties']['tile_id'] == tile['tile_name'].replace("_",""):
+                tile["timestamp"] = feature['properties']['Aktualitaet']
+    print("\rUpdated metadata successfully")
+
 def download_tiles(tiles_data, config_data):
     state = os.path.basename(__file__)[:2].upper()
     init, config = config_data
@@ -18,16 +26,22 @@ def download_tiles(tiles_data, config_data):
 
     DT = DownloadTools()
 
-    total_tiles = len(tiles)
-
     info_link = config_info['links']['download_link']
 
     try:
         response = requests.get(info_link)
         if response.status_code == 200:
             result = response.json()
+            get_creation_date(result, tiles)
+            tiles = DT.filter_tiles_by_date(tiles, init["date_range"])
+            state_data["tile_list"] = tiles
+            tiles_data["tiles"][state] = state_data
     except Exception as e:
         print(f"Error: No reponse from server {e}")
+    
+    total_tiles = len(tiles)
+
+    if not init["download"]: return
 
     for i, tile in enumerate(tiles, start=1):
         tile_name = tile['tile_name']
@@ -43,17 +57,6 @@ def download_tiles(tiles_data, config_data):
                             download_link = feature['properties']['dgm1']
                         case _:
                             print(f"Error with data type {data_type} is not in the configured or set correctly")
-
-                    tile["timestamp"] = feature['properties']['Aktualitaet']
-            
-            if not init["download"]: continue
-
-            # Check if timestamp is within date range
-            if DT.within_date_range(tile["timestamp"], init["date_range"]):
-                pass
-            else:
-                print(f"Tile {tile_name} not in date range")
-                continue
 
             filename = download_link.split('/')[-1]
             save_path = f"{landing}/{state.lower()}/{data_type.lower()}_{tile_name}/{filename}"

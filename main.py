@@ -35,9 +35,8 @@ def main(init_path):
 
     print("INITIALIZING DOWNLOAD PROCESS")
     
-    # Iterate through each state in the tiles data
-    
     try:
+        # Iterate through each state in the tiles data
         for state, state_data in tiles_data["tiles"].items():
             if state_data["tile_list"]:
                 print(f"\nCalling {state.lower()}_download.py for state {state} with {len(state_data['tile_list'])} tiles.")

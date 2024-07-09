@@ -106,10 +106,13 @@ def download_tiles(tiles_data, config_data):
 
     DT = DownloadTools()
 
-    total_tiles = len(tiles)
-
     meta_data_url = config_info['links']['meta_data_link']
     tile_ids = get_id_and_creation_date(meta_data_url, tiles, data_type)
+    tiles = DT.filter_tiles_by_date(tiles, init["date_range"])
+    state_data["tile_list"] = tiles
+    tiles_data["tiles"][state] = state_data
+
+    total_tiles = len(tiles)
 
     if not init["download"]: return
 
@@ -127,13 +130,6 @@ def download_tiles(tiles_data, config_data):
             save_path = f"{landing}/{state.lower()}/{data_type.lower()}_{tile_name}"
 
         save_path = f"{landing}/{state.lower()}/{data_type.lower()}_{tile_name}/{data_type.lower()}_{tile_name}"
-
-        # Check if timestamp is within date range
-        if DT.within_date_range(tile["timestamp"], init["date_range"]):
-            pass
-        else:
-            print(f"Tile {tile_name} not in date range")
-            continue
         
         # Download the file
         if not tile["location"]:
@@ -162,7 +158,6 @@ def download_tiles(tiles_data, config_data):
                     tile['location'] = os.path.dirname(file_path)
             except Exception as e:
                 print(f"Error while downloading to {tile_name}: {e}")
-
         else:
             print(f"Tile {tile['tile_name']} is already downloaded [{i} of {total_tiles}]")
     
