@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 from pyproj import Transformer, CRS
-from shapely.geometry import box, Polygon, MultiPolygon
+from shapely.geometry import box, Polygon, MultiPolygon, shape, mapping
 from shapely.ops import transform
 from geojson import Feature, Polygon as GeoPolygon
 import folium
@@ -280,6 +280,36 @@ def create_folium_map(meta_path, aoi_path):
     
     with open(aoi_path) as f:
         aoi_data = json.load(f)
+
+    def convert_geojson_to_epsg25832(geojson_input):
+        # Detect the input CRS from the GeoJSON
+        input_crs = geojson_input.get('crs', {}).get('properties', {}).get('name', None)
+        
+        if not input_crs:
+            raise ValueError("CRS not found in the GeoJSON input")
+        
+        # Create the transformer to EPSG:25832
+        transformer = Transformer.from_crs(input_crs, "epsg:25832", always_xy=True)
+        
+        # Function to transform each geometry
+        def transform_geometry(geometry):
+            return transform(transformer.transform, shape(geometry))
+        
+        # Transform all geometries in the GeoJSON
+        for feature in geojson_input['features']:
+            feature['geometry'] = mapping(transform_geometry(feature['geometry']))
+        
+        # Update the CRS to EPSG:25832
+        geojson_input['crs'] = {
+            "type": "name",
+            "properties": {
+                "name": "EPSG:25832"
+            }
+        }
+        
+        return geojson_input
+
+    aoi_data = convert_geojson_to_epsg25832(aoi_data)
 
     # Extract unique states from the data
     states = list(set(feature['properties']['state'] for feature in data['features']))
