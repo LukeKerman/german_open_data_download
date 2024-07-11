@@ -8,6 +8,8 @@ def get_creation_date(meta_url, tiles, data_type):
 
     for tile in tiles:
         tile_name_parts = tile["tile_name"].split('_')
+        if tile["timestamp"] != None: continue
+        
         if data_type == "DTM":
             tile_nr = f'{tile_name_parts[1]}_{tile_name_parts[2]}'
             start_tag = '<gco:DateTime>'
