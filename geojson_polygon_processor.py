@@ -43,7 +43,7 @@ def identify_crs(geojson_data):
 
 def transform_to_utm(polygon, crs):
     """
-    Transforms a polygon to UTM coordinates.
+    Transforms polygon to UTM coordinates.
 
     Args:
         polygon (Polygon): The polygon to transform.
