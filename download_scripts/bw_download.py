@@ -112,12 +112,14 @@ def download_tiles(tiles_data, config_data):
                     sub_folder = f"{data_type.lower()}_{'_'.join(file_name.split('_')[1:4])}"
                     s3_path = f"{config_info['links']['s3_path']}{sub_folder}/{file_name}"
                     try:
-                        DT.upload_file(save_path, s3_path)
+                        DT.upload_file(file_path, s3_path)
                         tile['location'].append(s3_path)
-                        if init['delete']:
-                            DT.delete_files_and_dir(os.path.dirname(save_path))
+                        
                     except Exception as e:
                         print(f"Error while uploading to {s3_path}: {e}")
+                
+                if init['delete']:
+                            DT.delete_files_and_dir(os.path.dirname(save_path))
             else:
                 tile['location'] = os.path.dirname(save_path)
 
