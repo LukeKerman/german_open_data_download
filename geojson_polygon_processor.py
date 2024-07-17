@@ -44,7 +44,7 @@ def identify_crs(geojson_data):
 
 def transform_to_utm(polygon, crs):
     """
-    Transforms a polygon to UTM coordinates.
+    Transforms polygon to UTM coordinates.
 
     Args:
         polygon (Polygon): The polygon to transform.
@@ -194,8 +194,8 @@ def merge_and_buffer(polygons, min_area, buffer_size, k):
 
         buffered_line = nearest_line.buffer(buffer_size)
         merged_polygon = unary_union([small_poly, buffered_line, nearest_poly])
-        #print(f"small: {small_poly.area} buffer: {buffer.area} near: {nearest_poly.area} merged: {merged_polygon.area} large_idx: {larger_polygons.index(nearest_poly)}")
-        if buffered_line.area > 3.2 * buffer_size**2:
+        
+        if nearest_line.length > 0.1: # issues with area calc if line is very short
             buffer_area = merged_polygon.area - small_poly.area - nearest_poly.area
         else:
             buffer_area = buffered_line.area
@@ -290,30 +290,24 @@ def save_geojson(polygons, output_file, crs):
 def main():
     '''Organizing input parameter'''
     # Default internal parameters
-    default_file_path = 'bdl/test/train_aoi.geojson'
-    default_output_file_path = 'bdl/test/train_aoi_connected.geojson'
-    default_min_area = 250000
-    default_buffer_size = 1
+    params = {
+        "file_path": 'bdl/test/train_aoi_test.geojson',
+        "output_file_path": 'bdl/test/train_aoi_test_connected.geojson',
+        "min_area": 250000,
+        "buffer_size": 1
+    }
 
-    # Check the number of command line arguments
-    if len(sys.argv) == 1:
-        # No additional arguments provided, use default values
-        file_path = default_file_path
-        output_file_path = default_output_file_path
-        min_area = default_min_area
-        buffer_size = default_buffer_size
-    elif len(sys.argv) == 5:
-        # All four arguments provided
-        file_path = sys.argv[1]
-        output_file_path = sys.argv[2]
-        min_area = int(sys.argv[3])
-        buffer_size = int(sys.argv[4])
-    else:
-        print("Usage: python geo_polygon_processor.py <file_path> <output_file_path> <min_area> <buffer_size>")
-        sys.exit(1)
+    # Update parameters based on command line arguments
+    arg_names = ["file_path", "output_file_path", "min_area", "buffer_size"]
+    for i, arg in enumerate(sys.argv[1:5], start=1):
+        params[arg_names[i-1]] = int(arg) if i > 2 else arg
 
-    polygons = process_geojson(file_path, min_area, buffer_size, k=9)
-    save_geojson(polygons, output_file_path, identify_crs(load_geojson(file_path)))
+    if len(sys.argv) > 5:
+        print("Usage: python script_name.py <file_path> <output_file_path> [min_area] [buffer_size]")
+        return
+
+    polygons = process_geojson(params["file_path"], params["min_area"], params["buffer_size"])
+    save_geojson(polygons, params["output_file_path"], identify_crs(load_geojson(params["file_path"])))
 
 if __name__ == "__main__":
     main()
