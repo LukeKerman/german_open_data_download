@@ -47,6 +47,17 @@ class DownloadTools:
         os.rmdir(dir)
 
     def download_file(self, download_url, save_path, tile_info):
+
+        def print_progress(total, chunksize, tile_info):
+            if total:
+                progress = (chunksize / total) * 100
+                if progress == 100:
+                    print(f"\rDownload progress of tile {tile_info['tile_name']}:\t{progress:>.1f}% completed", end="")
+                else:
+                    print(f"\rDownload progress of tile {tile_info['tile_name']}:\t{progress:>.1f}% ({total/(1024 * 1024):.1f} MB)", end="")
+            else:
+                print(f"\rDownload of tile {tile_info['tile_name']}: {chunksize / (1024 * 1024):.1f} MB", end="")
+
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
         response = requests.get(download_url, stream=True, verify=False)
@@ -54,26 +65,16 @@ class DownloadTools:
         content_type = response.headers.get('Content-Type', 0)
         chunk_size = 512*1024 # 0.5 MByte
         downloaded_size = 0
-
-        def is_zip_file(response):
-            zip_signature = b'PK\x03\x04'
-            initial_bytes = response.raw.read(4)
-            response.raw.seek(0)
-            return initial_bytes == zip_signature
         
-        with open(save_path, 'wb') as file:
-            for chunk in response.iter_content(chunk_size=chunk_size):
-                if chunk:
-                    file.write(chunk)
-                    downloaded_size += len(chunk)
-                    if total_size:
-                        progress = (downloaded_size / total_size) * 100
-                        if progress == 100:
-                            print(f"\rDownload progress of tile {tile_info['tile_name']}:\t{progress:>.1f}% completed", end="")
-                        else:
-                            print(f"\rDownload progress of tile {tile_info['tile_name']}:\t{progress:>.1f}% ({total_size/(1024 * 1024):.1f} MB)", end="")
-                    else:
-                        print(f"\rDownload of tile {tile_info['tile_name']}: {downloaded_size / (1024 * 1024):.1f} MB", end="")
+        if response.status_code == 200:
+            with open(save_path, 'wb') as file:
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    if chunk:
+                        file.write(chunk)
+                        downloaded_size += len(chunk)
+                        print_progress(total_size, downloaded_size, tile_info)
+        else:
+            raise Exception(f"Failed to retrieve content. Status code: {response.status_code}")
         
         if not total_size:
             print(f"\rDownload of tile {tile_info['tile_name']} completed ({downloaded_size / (1024 * 1024):.1f} MB)", end="")
