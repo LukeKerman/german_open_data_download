@@ -1,5 +1,6 @@
 import sys
 import warnings
+import time
 
 import numpy as np
 import geojson
@@ -163,7 +164,7 @@ def find_nearest_neighbor(polygon, polygons, centroids, k=3):
     
     return nearest_polygon, nearest_line
 
-def merge_and_buffer(polygons, min_area, buffer_size):
+def merge_and_buffer(polygons, min_area, buffer_size, k):
     """
     Merges and buffers polygons based on a minimum area threshold.
 
@@ -186,7 +187,7 @@ def merge_and_buffer(polygons, min_area, buffer_size):
         filtered_polygons = [polygon for polygon in polygons if polygon != small_poly]
         centroids = np.array([np.array(poly.centroid.coords[0]) for poly in filtered_polygons])
 
-        nearest_poly, nearest_line = find_nearest_neighbor(small_poly, filtered_polygons, centroids)
+        nearest_poly, nearest_line = find_nearest_neighbor(small_poly, filtered_polygons, centroids, k)
         if nearest_poly is None:
             polygons.append(small_poly)
             continue
@@ -211,7 +212,7 @@ def merge_and_buffer(polygons, min_area, buffer_size):
     print()  # New line after progress completion
     return polygons, total_buffer_area
 
-def process_geojson(file_path, min_area, buffer_size):
+def process_geojson(file_path, min_area, buffer_size, k):
     """
     Processes a GeoJSON file to merge and buffer polygons based on a minimum area threshold.
 
@@ -223,11 +224,22 @@ def process_geojson(file_path, min_area, buffer_size):
     Returns:
         list: The processed polygons.
     """
+    
     geojson_data = load_geojson(file_path)
     original_crs = identify_crs(geojson_data)
     polygons, utm_crs = extract_polygons(geojson_data, original_crs)
+    lg_ply, sm_ply = split_polygons_by_area(polygons, min_area)
     areas = calculate_areas(polygons)
+    lg_areas = calculate_areas(lg_ply)
+    total_large_area = sum(lg_areas)
+    sm_areas = calculate_areas(sm_ply)
+    total_small_area = sum(sm_areas)
     total_area = sum(areas)
+    time_start = time.time()
+
+    print(f"Total AOI Area: {total_area:.1f} sqm")
+    print(f"Total Large AOI Area: {total_large_area:.1f} sqm")
+    print(f"Total Small AOI Area: {total_small_area:.1f} sqm")
     
     print(f"Initial Number of Polygons: {len(polygons)}\n  Iteration Summary:")
 
@@ -238,16 +250,19 @@ def process_geojson(file_path, min_area, buffer_size):
         if all(area >= min_area for area in areas):
             break
         print(f"   Iteration: {iteration}")
-        polygons, buffer_i = merge_and_buffer(polygons, min_area, buffer_size)
+        polygons, buffer_i = merge_and_buffer(polygons, min_area, buffer_size, k)
 
         buffer += buffer_i
         iteration += 1
 
         areas = calculate_areas(polygons)
+    
+    process_time = time.time() - time_start
 
     print(f"Final Number of Polygons: {len(polygons)}")
     print(f"Buffer Ratio: {buffer/total_area*100:.2f}%")
     print(f"Buffer Area: {buffer:.1f} sqm")
+    print(f"Time to Process: {process_time:.0f} seconds")
 
     # Transform polygons back to original CRS
     polygons = [transform_to_original_crs(poly, original_crs, utm_crs) for poly in polygons]
@@ -280,25 +295,24 @@ def main():
     default_min_area = 250000
     default_buffer_size = 1
 
-    # Initialize parameters with default values
-    file_path = default_file_path
-    output_file_path = default_output_file_path
-    min_area = default_min_area
-    buffer_size = default_buffer_size
-
-    # Update parameters based on command line arguments
-    if len(sys.argv) > 1:
+    # Check the number of command line arguments
+    if len(sys.argv) == 1:
+        # No additional arguments provided, use default values
+        file_path = default_file_path
+        output_file_path = default_output_file_path
+        min_area = default_min_area
+        buffer_size = default_buffer_size
+    elif len(sys.argv) == 5:
+        # All four arguments provided
         file_path = sys.argv[1]
-    if len(sys.argv) > 2:
         output_file_path = sys.argv[2]
-    if len(sys.argv) > 3:
         min_area = int(sys.argv[3])
-    if len(sys.argv) > 4:
         buffer_size = int(sys.argv[4])
     else:
-        print("Usage: python script_name.py <file_path> <output_file_path> [min_area] [buffer_size]")
+        print("Usage: python geo_polygon_processor.py <file_path> <output_file_path> <min_area> <buffer_size>")
+        sys.exit(1)
 
-    polygons = process_geojson(file_path, min_area, buffer_size)
+    polygons = process_geojson(file_path, min_area, buffer_size, k=9)
     save_geojson(polygons, output_file_path, identify_crs(load_geojson(file_path)))
 
 if __name__ == "__main__":
