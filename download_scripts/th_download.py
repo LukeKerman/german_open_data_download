@@ -41,7 +41,7 @@ def get_id_and_creation_date(meta_url, tiles, data_type):
         for tile_id in range(start_id, end_id + 1):
             try:
                 response = requests.get(meta_url.format(tile_id))
-                print(f"\Requesting meta data: {tile_id/(end_id-start_id)*100:>3.1f}%", end="")
+                print(f"\rRequesting meta data: {tile_id/(end_id-start_id)*100:>3.1f}%", end="")
                 if response.status_code == 200:
                     data = response.json()
                     if data["success"] == "true" and "object" in data:
