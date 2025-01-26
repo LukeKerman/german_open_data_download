@@ -88,11 +88,12 @@ class DownloadTools:
                 else:
                     for member in zip_ref.namelist():
                         filename = os.path.basename(member)
+                        zipname = os.path.basename(save_path).split('.')[0]
                         # Skip directories and empty filenames
                         if not filename:
                             continue
                         # Define the target path for the extracted file
-                        target_path = os.path.join(extract_path, filename)
+                        target_path = os.path.join(extract_path, zipname, filename)
                         # Open the source file from the zip archive
                         source = zip_ref.open(member)
                         # Ensure the target directory exists
@@ -100,6 +101,8 @@ class DownloadTools:
                         # Write the file to the target directory
                         with open(target_path, "wb") as target:
                             target.write(source.read())
+                        # the file has to be closed, to be able to remove the zip file in the next step
+                        zip_ref.close()
                     '''extract_dir = os.path.join(os.path.dirname(save_path), os.path.splitext(os.path.basename(save_path))[0])
                     os.makedirs(extract_dir, exist_ok=True)
                     zip_ref.extractall(extract_dir)'''
